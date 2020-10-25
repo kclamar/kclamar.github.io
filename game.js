@@ -22,6 +22,7 @@ function Player() {
     this.position = PLAYER_INIT_POS;
     this.motion = motionType.NONE;
     this.verticalSpeed = 0;
+    this.facing = facingType.RIGHT;
 }
 
 Player.prototype.isOnPlatform = function() {
@@ -103,6 +104,7 @@ var GAME_INTERVAL = 25;                     // The time interval of running the 
 // Variables in the game
 //
 var motionType = {NONE:0, LEFT:1, RIGHT:2}; // Motion enum
+var facingType = {LEFT:0, RIGHT: 1};
 
 var player = null;                          // The player object
 var gameInterval = null;                    // The interval
@@ -195,10 +197,12 @@ function keydown(evt) {
     switch (keyCode) {
         case "A".charCodeAt(0):
             player.motion = motionType.LEFT;
+            player.facing = facingType.LEFT;
             break;
 
         case "D".charCodeAt(0):
             player.motion = motionType.RIGHT;
+            player.facing = facingType.RIGHT;
             break;
 			
 
@@ -333,7 +337,8 @@ function gamePlay() {
 //
 function updateScreen() {
     // Transform the player
-    player.node.setAttribute("transform", "translate(" + player.position.x + "," + player.position.y + ")");
+    scale = (player.facing == facingType.LEFT) ? "-1" : "1";
+    player.node.setAttribute("transform", "translate(" + player.position.x + "," + player.position.y + ") scale(" + scale + ", 1)");
             
     // Calculate the scaling and translation factors	
     
