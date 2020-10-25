@@ -193,11 +193,11 @@ function keydown(evt) {
     var keyCode = (evt.keyCode)? evt.keyCode : evt.getKeyCode();
 
     switch (keyCode) {
-        case "N".charCodeAt(0):
+        case "A".charCodeAt(0):
             player.motion = motionType.LEFT;
             break;
 
-        case "M".charCodeAt(0):
+        case "D".charCodeAt(0):
             player.motion = motionType.RIGHT;
             break;
 			
@@ -205,13 +205,13 @@ function keydown(evt) {
         // Add your code here
 		
 			
-        case "Z".charCodeAt(0):
+        case "W".charCodeAt(0):
             if (player.isOnPlatform()) {
                 player.verticalSpeed = JUMP_SPEED;
             }
             break;
 		
-		case 32: // spacebar = shoot
+		case "H".charCodeAt(0): // spacebar = shoot
 			if (canShoot) shootBullet();
 			break;
     }
@@ -226,11 +226,11 @@ function keyup(evt) {
     var keyCode = (evt.keyCode)? evt.keyCode : evt.getKeyCode();
 
     switch (keyCode) {
-        case "N".charCodeAt(0):
+        case "A".charCodeAt(0):
             if (player.motion == motionType.LEFT) player.motion = motionType.NONE;
             break;
 
-        case "M".charCodeAt(0):
+        case "D".charCodeAt(0):
             if (player.motion == motionType.RIGHT) player.motion = motionType.NONE;
             break;
     }
