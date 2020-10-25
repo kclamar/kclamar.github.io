@@ -8,7 +8,7 @@
   <script language="JavaScript" src="game.js"></script>
 </head>
 
-<body style="text-align: center" onload="load();">
+<body style="text-align: center">
   <svg width="800px" height="600px"
   xmlns="http://www.w3.org/2000/svg"
   xmlns:xhtml="http://www.w3.org/1999/xhtml"
@@ -192,13 +192,25 @@
     h1 {
       color: yellow;
     }
-   </style>
-<body>
-<h1>The Candy Hunt</h1>
-<h2>Ka Chung LAM</h2>
-You are a candy hunter. You need to collect as many candies as possible. Use the A key to go left. The D key to go right and the W key to jump. Ghosts are going to stop you on the way. Use the H key to shoot and kill them. Pick up the candles and go to the exit quickly.</p>
-</body>   
+    h2 {
+      color: yellow;
+    }
+    p {
+      color: yellow;
+    }
+  </style>
+  <body>
+    <h1>The Candy Hunt</h1>
+    <h2>Ka Chung LAM</h2>
+    <p>
+      You are a candy hunter. You need to collect as many candies as possible. Use the A key to go left. The D key to go right and the W key to jump. Ghosts are going to stop you on the way. Use the H key to shoot and kill them. Pick up the candles and go to the exit quickly.
+    </p>
+  </body>   
 </foreignObject>
+  <g id="button" onclick="startGame()">
+    <rect x="40%" y="80%" width="20%" height="10%" style="fill:yellow"/>
+    <text x="50%" y="85%" dominant-baseline="middle" text-anchor="middle">Start</text>
+  </g>
 </g>
 
 </svg>

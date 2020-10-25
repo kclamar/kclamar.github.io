@@ -340,3 +340,10 @@ function updateScreen() {
     // Add your code here
 	
 }
+
+function startGame() {
+    var button = document.getElementById("button");
+    var startScreen = document.getElementById("startscreen");
+    startScreen.setAttribute("visibility", "hidden");
+    load();
+}
