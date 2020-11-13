@@ -1,4 +1,4 @@
-// The point and size class used in this program
+// Classes for point and size
 function Point(x, y) {
   this.x = (x) ? parseFloat(x) : 0.0;
   this.y = (y) ? parseFloat(y) : 0.0;
@@ -9,6 +9,53 @@ function Size(w, h) {
   this.h = (h) ? parseFloat(h) : 0.0;
 }
 
+
+// Enum types
+var motionType = {
+  NONE: 0,
+  LEFT: 1,
+  RIGHT: 2
+}; // Motion enum
+
+var facingType = {
+  LEFT: 0,
+  RIGHT: 1
+};
+
+
+// Constants
+var GAME_INTERVAL = 25; // Time interval of running the game
+var SCREEN_SIZE = new Size(600, 560); // Size of the game screen
+
+var PLAYER_SIZE = new Size(40, 40); // Size of the player
+var PLAYER_INIT_POS = new Point(0, 0); // Initial position of the player
+var MOVE_DISPLACEMENT = 5; // Speed of the player in motion
+var JUMP_SPEED = 15; // Speed of the player jumping
+var VERTICAL_DISPLACEMENT = 1; // Displacement of vertical speed
+var SHOOT_INTERVAL = 200.0; // The period when shooting is disabled
+
+var NUM_MONSTERS = 6; // Number of monsters
+var MONSTER_SIZE = new Size(40, 40); // Size of a monster
+var MONSTER_SPEED = 1.0; // Speed of monsters
+var MONSTER_DISTANCE = 120; // Minimum initial distance of monsters from the player
+
+var BULLET_SIZE = new Size(10, 10); // Size of a bullet
+var BULLET_SPEED = 10.0; // Speed of a bullet
+
+var NUM_GOOD_THINGS = 8; // Number of good things
+
+
+// Variables
+var gameInterval = null; // Game interval
+var countDownInterval = null; // Countdown interval
+var zoom = 1.0; // Zoom level of the screen
+var time_left = 60; // Amount of time left in seconds
+
+var player = null; // Player object
+var canShoot = true; // Whether the player can shoot a bullet
+var bullets_left = 8; // Number of bullets left
+
+
 // Helper function for checking intersection between two rectangles
 function intersect(pos1, size1, pos2, size2) {
   return (pos1.x < pos2.x + size2.w && pos1.x + size1.w > pos2.x &&
@@ -16,7 +63,7 @@ function intersect(pos1, size1, pos2, size2) {
 }
 
 
-// The player class used in this program
+// Player class
 function Player(name) {
   this.node = document.getElementById("player");
   this.node_no_name = document.getElementById("playerwithoutname");
@@ -88,56 +135,12 @@ Player.prototype.collideScreen = function(position) {
   }
 }
 
-
-//
-// Below are constants used in the game
-//
-var PLAYER_SIZE = new Size(40, 40); // The size of the player
-var SCREEN_SIZE = new Size(600, 560); // The size of the game screen
-var PLAYER_INIT_POS = new Point(0, 0); // The initial position of the player
-var MONSTER_DISTANCE = 200; // Distance of ghost from the player
-var MOVE_DISPLACEMENT = 5; // The speed of the player in motion
-var JUMP_SPEED = 15; // The speed of the player jumping
-var VERTICAL_DISPLACEMENT = 1; // The displacement of vertical speed
-
-var GAME_INTERVAL = 25; // The time interval of running the game
-
-
-//
-// Variables in the game
-//
-var motionType = {
-  NONE: 0,
-  LEFT: 1,
-  RIGHT: 2
-}; // Motion enum
-var facingType = {
-  LEFT: 0,
-  RIGHT: 1
-};
-
-var player = null; // The player object
-var gameInterval = null; // The interval
-var countDownInterval = null;
-var zoom = 1.0; // The zoom level of the screen
-
-var BULLET_SIZE = new Size(10, 10); // The size of a bullet
-var BULLET_SPEED = 10.0; // The speed of a bullet
-//  = pixels it moves each game loop
-var SHOOT_INTERVAL = 200.0; // The period when shooting is disabled
-var canShoot = true; // A flag indicating whether the player can shoot a bullet
-
-var MONSTER_SIZE = new Size(40, 40); // The size of a monster
-var MONSTER_SPEED = 1.0;
-
-var time_left = 60;
-var bullets_left = 8;
-
+// Generates random integer from vmin to vmax - 1
 function rng(vmin, vmax) {
   return vmin + Math.floor((vmax - vmin) * Math.random());
 }
 
-// Should be executed after the page is loaded
+// Executed after the page is loaded
 function load(player_name) {
   // Attach keyboard events
   document.addEventListener("keydown", keydown, false);
@@ -147,20 +150,21 @@ function load(player_name) {
   player = new Player(player_name);
 
   // Create the monsters
-  for (i = 0; i < 6; i++) {
+  for (i = 0; i < NUM_MONSTERS; i++) {
     createMonster(i == 0);
+  }
+
+  for (i = 0; i < NUM_GOOD_THINGS; i++) {
+    createGoodThing();
   }
 
   // Start the game interval
   gameInterval = setInterval("gamePlay()", GAME_INTERVAL);
 }
 
-
-//
-// This function creates the monsters in the game
-//
+// Create a monster
 function createMonster(shootable) {
-  var startx = Math.floor(rng(MONSTER_DISTANCE, SCREEN_SIZE.w - MONSTER_SIZE.w));
+  var startx = Math.floor(rng(0, SCREEN_SIZE.w - MONSTER_SIZE.w));
   var starty = Math.floor(rng(MONSTER_DISTANCE, SCREEN_SIZE.h - MONSTER_SIZE.h));
   var endx = Math.floor(rng(MONSTER_DISTANCE, SCREEN_SIZE.w - MONSTER_SIZE.w));
 
@@ -175,10 +179,19 @@ function createMonster(shootable) {
   document.getElementById("monsters").appendChild(monster);
 }
 
+// Create a good thing
+function createGoodThing() {
+  var x = Math.floor(rng(0, SCREEN_SIZE.w - MONSTER_SIZE.w));
+  var y = Math.floor(rng(0, SCREEN_SIZE.h - MONSTER_SIZE.h));
 
-//
-// This function shoots a bullet from the player
-//
+  var goodThing = document.createElementNS("http://www.w3.org/2000/svg", "use");
+  goodThing.setAttribute("x", x);
+  goodThing.setAttribute("y", y);
+  goodThing.setAttributeNS("http://www.w3.org/1999/xlink", "xlink:href", "#goodthing");
+  document.getElementById("goodthings").appendChild(goodThing);
+}
+
+// Shoots a bullet from the player
 function shootBullet() {
   // Disable shooting for a short period of time
   canShoot = false;
@@ -200,7 +213,7 @@ function shootBullet() {
   document.getElementById("bullets").appendChild(bullet);
 }
 
-
+// Moves player
 function movePlayer() {
   // Check whether the player is on a platform
   var isOnPlatform = player.isOnPlatform();
@@ -241,7 +254,7 @@ function movePlayer() {
   player.position = position;
 }
 
-
+// Moves monsyers
 function moveMonsters() {
   // Go through all bullets
   var monsters = document.getElementById("monsters");
@@ -260,23 +273,18 @@ function moveMonsters() {
 
     if (x >= Math.max(initx, endx)) {
       node.setAttribute("direction", facingType.LEFT);
-    }
-
-    if (x <= Math.min(initx, endx)) {
+    } else if (x <= Math.min(initx, endx)) {
       node.setAttribute("direction", facingType.RIGHT);
     }
 
-    var w = MONSTER_SIZE.w / 2;
-    var scale = (node.getAttribute("direction") == facingType.LEFT) ? "-1" : "1";
+    var t = x + MONSTER_SIZE.w / 2;
+    var s = (node.getAttribute("direction") == facingType.LEFT) ? -1 : 1;
 
-    node.setAttribute("transform", "translate(" + (x + w) + ", 0) scale(" + scale + ", 1) translate(-" + (x + w) + ", 0)");
+    node.setAttribute("transform", "translate(" + t + ", 0) scale(" + s + ", 1) translate(-" + t + ", 0)");
   }
 }
 
-
-//
-// This function updates the position of the bullets
-//
+// Updates positions of the bullets
 function moveBullets() {
   // Go through all bullets
   var bullets = document.getElementById("bullets");
@@ -297,9 +305,7 @@ function moveBullets() {
   }
 }
 
-//
-// This is the keydown handling function for the SVG document
-//
+// Keydown handler
 function keydown(evt) {
   var keyCode = (evt.keyCode) ? evt.keyCode : evt.getKeyCode();
 
@@ -314,24 +320,19 @@ function keydown(evt) {
       player.facing = facingType.RIGHT;
       break;
 
-
-      // Add your code here
     case "W".charCodeAt(0):
       if (player.isOnPlatform()) {
         player.verticalSpeed = JUMP_SPEED;
       }
       break;
 
-    case "H".charCodeAt(0): // spacebar = shoot
+    case "H".charCodeAt(0):
       if (canShoot) shootBullet();
       break;
   }
 }
 
-
-//
-// This is the keyup handling function for the SVG document
-//
+// Keyup handler
 function keyup(evt) {
   // Get the key code
   var keyCode = (evt.keyCode) ? evt.keyCode : evt.getKeyCode();
@@ -347,10 +348,7 @@ function keyup(evt) {
   }
 }
 
-
-//
-// This function checks collision
-//
+// Collision checking
 function collisionDetection() {
   // Check whether the player collides with a monster
   var monsters = document.getElementById("monsters");
@@ -386,11 +384,8 @@ function collisionDetection() {
   }
 }
 
-//
-// This function updates the position and motion of the player in the system
-//
+// Updates position and motion of the player
 function gamePlay() {
-  // Check collisions
   collisionDetection();
   movePlayer();
   moveBullets();
@@ -398,54 +393,51 @@ function gamePlay() {
   updateScreen();
 }
 
-
-//
 // This function updates the position of the player's SVG object and
 // set the appropriate translation of the game screen relative to the
 // the position of the player
-//
 function updateScreen() {
-  // Transform the player
-  scale = (player.facing == facingType.LEFT) ? "-1" : "1";
-  // alert(player.width);
-  var w = PLAYER_SIZE.w / 2;
-  player.node_no_name.setAttribute("transform", "translate(" + w + ", 0) scale(" + scale + ", 1) translate(-" + w + ", 0)");
-  player.node.setAttribute("transform", "translate(" + player.position.x + "," + player.position.y + ")");
-  // player.node.setAttribute("transform", "translate(" + player.position.x + "," + player.position.y + ") scale(" + scale + ", 1)");
-
   // Calculate the scaling and translation factors
+  var s = (player.facing == facingType.LEFT) ? "-1" : "1";
+  var t = PLAYER_SIZE.w / 2;
 
-  // Add your code here
-
+  // Transform the player
+  player.node_no_name.setAttribute("transform", "translate(" + t + ", 0) scale(" + s + ", 1) translate(-" + t + ", 0)");
+  player.node.setAttribute("transform", "translate(" + player.position.x + "," + player.position.y + ")");
 }
 
+// Dies
 function die() {
   alert("Game over!");
   clearInterval(gameInterval);
   clearInterval(countDownInterval);
 }
 
+// Counts down by 1 second
 function countDown() {
   time_left -= 1;
+
   if (time_left >= 0) {
     document.getElementById("time").textContent = "" + time_left + " sec";
-  }
-  if (time_left < 0) {
+  } else {
     die();
   }
 }
 
+// Starts timer
 function startTimer() {
   countDownInterval = setInterval("countDown()", 1000);
 }
 
+// Starts game
 function startGame() {
-  // var player_name = prompt("Enter your name:");
   document.getElementById("time").textContent = "" + time_left + " sec";
-  player_name = "Hi";
+
   var button = document.getElementById("button");
   var startScreen = document.getElementById("startscreen");
+  var player_name = prompt("Enter your name:");
+
+  load(player_name);
   startScreen.setAttribute("visibility", "hidden");
   startTimer();
-  load(player_name);
 }
