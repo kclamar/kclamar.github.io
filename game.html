@@ -176,10 +176,13 @@
       </g>
 
       <g id="player">
-        <circle cx="20" cy="20" r="20" style="fill:url(#player_color);stroke:black;stroke-width:2"/>
-        <!-- <ellipse cx="15" cy="15" rx="3" ry="6" style="fill:black"/> -->
-        <ellipse cx="25" cy="15" rx="3" ry="6" style="fill:black"/>
-        <path d="M10,25 l20,0 q0,8 -10,8 t-10,-8" style="fill:orange;stroke:black;stroke-black:2"/>
+        <g id="playerwithoutname">
+          <circle cx="20" cy="20" r="20" style="fill:url(#player_color);stroke:black;stroke-width:2"/>
+          <!-- <ellipse cx="15" cy="15" rx="3" ry="6" style="fill:black"/> -->
+          <ellipse cx="25" cy="15" rx="3" ry="6" style="fill:black"/>
+          <path d="M10,25 l20,0 q0,8 -10,8 t-10,-8" style="fill:orange;stroke:black;stroke-black:2"/>
+        </g>
+        <text x="10" y="20" class="small" text-anchor="middle">Anonymous</text>
       </g>
     </g>
   </g>
@@ -205,7 +208,7 @@
     <p>
       You are a candy hunter. You need to collect as many candies as possible. Use the A key to go left. The D key to go right and the W key to jump. Ghosts are going to stop you on the way. Use the H key to shoot and kill them. Pick up the candles and go to the exit quickly.
     </p>
-  </body>   
+  </body>
 </foreignObject>
   <g id="button" onclick="startGame()">
     <rect x="40%" y="80%" width="20%" height="10%" style="fill:yellow"/>

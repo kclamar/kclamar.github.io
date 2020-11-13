@@ -17,12 +17,14 @@ function intersect(pos1, size1, pos2, size2) {
 
 
 // The player class used in this program
-function Player() {
+function Player(name) {
     this.node = document.getElementById("player");
+    this.node_no_name = document.getElementById("playerwithoutname");
     this.position = PLAYER_INIT_POS;
     this.motion = motionType.NONE;
     this.verticalSpeed = 0;
     this.facing = facingType.RIGHT;
+    this.name = name;
 }
 
 Player.prototype.isOnPlatform = function() {
@@ -120,14 +122,14 @@ var MONSTER_SIZE = new Size(40, 40); // The size of a monster
 
 
 // Should be executed after the page is loaded
-function load() {
+function load(player_name) {
     // Attach keyboard events
     document.addEventListener("keydown", keydown, false);
     document.addEventListener("keyup", keyup, false);
 
     // Create the player
-    player = new Player();
-	
+    player = new Player(player_name);
+
     // Create the monsters
     createMonster(200, 15);
     createMonster(400, 270);
@@ -160,7 +162,15 @@ function shootBullet() {
 
     // Create the bullet using the use node
     var bullet = document.createElementNS("http://www.w3.org/2000/svg", "use");
-    bullet.setAttribute("x", player.position.x + PLAYER_SIZE.w / 2 - BULLET_SIZE.w / 2);
+    if (player.facing == facingType.RIGHT) {
+      x = player.position.x + PLAYER_SIZE.w / 2 - BULLET_SIZE.w / 2;
+    }
+    else {
+      x = player.position.x + BULLET_SIZE.w / 2;
+    }
+
+    bullet.setAttribute("direction", player.facing)
+    bullet.setAttribute("x", x);
     bullet.setAttribute("y", player.position.y + PLAYER_SIZE.h / 2 - BULLET_SIZE.h / 2);
     bullet.setAttributeNS("http://www.w3.org/1999/xlink", "xlink:href", "#bullet");
     document.getElementById("bullets").appendChild(bullet);
@@ -175,10 +185,12 @@ function moveBullets() {
     var bullets = document.getElementById("bullets");
     for (var i = 0; i < bullets.childNodes.length; i++) {
         var node = bullets.childNodes.item(i);
-        
+
         // Update the position of the bullet
         var x = parseInt(node.getAttribute("x"));
-        node.setAttribute("x", x + BULLET_SPEED);
+        var velocity = (node.getAttribute("direction") == facingType.RIGHT) ? BULLET_SPEED : -BULLET_SPEED;
+
+        node.setAttribute("x", x + velocity);
 
         // If the bullet is not inside the screen delete it from the group
         if (x > SCREEN_SIZE.w) {
@@ -204,17 +216,17 @@ function keydown(evt) {
             player.motion = motionType.RIGHT;
             player.facing = facingType.RIGHT;
             break;
-			
+
 
         // Add your code here
-		
-			
+
+
         case "W".charCodeAt(0):
             if (player.isOnPlatform()) {
                 player.verticalSpeed = JUMP_SPEED;
             }
             break;
-		
+
 		case "H".charCodeAt(0): // spacebar = shoot
 			if (canShoot) shootBullet();
 			break;
@@ -286,10 +298,10 @@ function collisionDetection() {
 function gamePlay() {
     // Check collisions
     collisionDetection();
-	
+
     // Check whether the player is on a platform
     var isOnPlatform = player.isOnPlatform();
-    
+
     // Update player position
     var displacement = new Point();
 
@@ -338,17 +350,21 @@ function gamePlay() {
 function updateScreen() {
     // Transform the player
     scale = (player.facing == facingType.LEFT) ? "-1" : "1";
-    player.node.setAttribute("transform", "translate(" + player.position.x + "," + player.position.y + ") scale(" + scale + ", 1)");
-            
-    // Calculate the scaling and translation factors	
-    
+    // alert(player.width);
+
+    player.node.setAttribute("transform", "translate(" + (player.position.x + 20) + "," + player.position.y + ") scale(" + scale + ", 1) translate(-20, 0)");
+    // player.node.setAttribute("transform", "translate(" + player.position.x + "," + player.position.y + ") scale(" + scale + ", 1)");
+
+    // Calculate the scaling and translation factors
+
     // Add your code here
-	
+
 }
 
 function startGame() {
+    var player_name = prompt("Enter your name:");
     var button = document.getElementById("button");
     var startScreen = document.getElementById("startscreen");
     startScreen.setAttribute("visibility", "hidden");
-    load();
+    load(player_name);
 }
