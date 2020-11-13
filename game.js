@@ -43,6 +43,7 @@ var BULLET_SIZE = new Size(10, 10); // Size of a bullet
 var BULLET_SPEED = 10.0; // Speed of a bullet
 
 var NUM_GOOD_THINGS = 8; // Number of good things
+var GOOD_THING_SIZE = new Size(40, 40); // Size of the good things
 
 
 // Variables
@@ -141,13 +142,13 @@ function rng(vmin, vmax) {
 }
 
 // Executed after the page is loaded
-function load(player_name) {
+function load(playerName) {
   // Attach keyboard events
   document.addEventListener("keydown", keydown, false);
   document.addEventListener("keyup", keyup, false);
 
   // Create the player
-  player = new Player(player_name);
+  player = new Player(playerName);
 
   // Create the monsters
   for (i = 0; i < NUM_MONSTERS; i++) {
@@ -430,14 +431,14 @@ function startTimer() {
 }
 
 // Starts game
-function startGame() {
+function startGame(debug = false) {
   document.getElementById("time").textContent = "" + time_left + " sec";
 
   var button = document.getElementById("button");
   var startScreen = document.getElementById("startscreen");
-  var player_name = prompt("Enter your name:");
+  var playerName = (debug) ? "" : prompt("Enter your name:");
 
-  load(player_name);
+  load(playerName);
   startScreen.setAttribute("visibility", "hidden");
   startTimer();
 }
