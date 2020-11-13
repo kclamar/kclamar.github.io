@@ -1,225 +1,276 @@
 // The point and size class used in this program
 function Point(x, y) {
-    this.x = (x)? parseFloat(x) : 0.0;
-    this.y = (y)? parseFloat(y) : 0.0;
+  this.x = (x) ? parseFloat(x) : 0.0;
+  this.y = (y) ? parseFloat(y) : 0.0;
 }
 
 function Size(w, h) {
-    this.w = (w)? parseFloat(w) : 0.0;
-    this.h = (h)? parseFloat(h) : 0.0;
+  this.w = (w) ? parseFloat(w) : 0.0;
+  this.h = (h) ? parseFloat(h) : 0.0;
 }
 
 // Helper function for checking intersection between two rectangles
 function intersect(pos1, size1, pos2, size2) {
-    return (pos1.x < pos2.x + size2.w && pos1.x + size1.w > pos2.x &&
-            pos1.y < pos2.y + size2.h && pos1.y + size1.h > pos2.y);
+  return (pos1.x < pos2.x + size2.w && pos1.x + size1.w > pos2.x &&
+    pos1.y < pos2.y + size2.h && pos1.y + size1.h > pos2.y);
 }
 
 
 // The player class used in this program
 function Player(name) {
-    this.node = document.getElementById("player");
-    this.node_no_name = document.getElementById("playerwithoutname");
-    this.position = PLAYER_INIT_POS;
-    this.motion = motionType.NONE;
-    this.verticalSpeed = 0;
-    this.facing = facingType.RIGHT;
-    if (name == "") {
-      name = "Anonymous";
-    }
-    this.name = name;
-    document.getElementById("nametag").textContent = this.name;
+  this.node = document.getElementById("player");
+  this.node_no_name = document.getElementById("playerwithoutname");
+  this.position = PLAYER_INIT_POS;
+  this.motion = motionType.NONE;
+  this.verticalSpeed = 0;
+  this.facing = facingType.RIGHT;
+  this.name = (name == "") ? "Anonymous" : name;
+  document.getElementById("nametag").textContent = this.name;
 }
 
 Player.prototype.isOnPlatform = function() {
-    var platforms = document.getElementById("platforms");
-    for (var i = 0; i < platforms.childNodes.length; i++) {
-        var node = platforms.childNodes.item(i);
-        if (node.nodeName != "rect") continue;
+  var platforms = document.getElementById("platforms");
+  for (var i = 0; i < platforms.childNodes.length; i++) {
+    var node = platforms.childNodes.item(i);
+    if (node.nodeName != "rect") continue;
 
-        var x = parseFloat(node.getAttribute("x"));
-        var y = parseFloat(node.getAttribute("y"));
-        var w = parseFloat(node.getAttribute("width"));
-        var h = parseFloat(node.getAttribute("height"));
+    var x = parseFloat(node.getAttribute("x"));
+    var y = parseFloat(node.getAttribute("y"));
+    var w = parseFloat(node.getAttribute("width"));
+    var h = parseFloat(node.getAttribute("height"));
 
-        if (((this.position.x + PLAYER_SIZE.w > x && this.position.x < x + w) ||
-             ((this.position.x + PLAYER_SIZE.w) == x && this.motion == motionType.RIGHT) ||
-             (this.position.x == (x + w) && this.motion == motionType.LEFT)) &&
-            this.position.y + PLAYER_SIZE.h == y) return true;
-    }
-    if (this.position.y + PLAYER_SIZE.h == SCREEN_SIZE.h) return true;
+    if (((this.position.x + PLAYER_SIZE.w > x && this.position.x < x + w) ||
+        ((this.position.x + PLAYER_SIZE.w) == x && this.motion == motionType.RIGHT) ||
+        (this.position.x == (x + w) && this.motion == motionType.LEFT)) &&
+      this.position.y + PLAYER_SIZE.h == y) return true;
+  }
+  if (this.position.y + PLAYER_SIZE.h == SCREEN_SIZE.h) return true;
 
-    return false;
+  return false;
 }
 
 Player.prototype.collidePlatform = function(position) {
-    var platforms = document.getElementById("platforms");
-    for (var i = 0; i < platforms.childNodes.length; i++) {
-        var node = platforms.childNodes.item(i);
-        if (node.nodeName != "rect") continue;
+  var platforms = document.getElementById("platforms");
+  for (var i = 0; i < platforms.childNodes.length; i++) {
+    var node = platforms.childNodes.item(i);
+    if (node.nodeName != "rect") continue;
 
-        var x = parseFloat(node.getAttribute("x"));
-        var y = parseFloat(node.getAttribute("y"));
-        var w = parseFloat(node.getAttribute("width"));
-        var h = parseFloat(node.getAttribute("height"));
-        var pos = new Point(x, y);
-        var size = new Size(w, h);
+    var x = parseFloat(node.getAttribute("x"));
+    var y = parseFloat(node.getAttribute("y"));
+    var w = parseFloat(node.getAttribute("width"));
+    var h = parseFloat(node.getAttribute("height"));
+    var pos = new Point(x, y);
+    var size = new Size(w, h);
 
-        if (intersect(position, PLAYER_SIZE, pos, size)) {
-            position.x = this.position.x;
-            if (intersect(position, PLAYER_SIZE, pos, size)) {
-                if (this.position.y >= y + h)
-                    position.y = y + h;
-                else
-                    position.y = y - PLAYER_SIZE.h;
-                this.verticalSpeed = 0;
-            }
-        }
+    if (intersect(position, PLAYER_SIZE, pos, size)) {
+      position.x = this.position.x;
+      if (intersect(position, PLAYER_SIZE, pos, size)) {
+        if (this.position.y >= y + h)
+          position.y = y + h;
+        else
+          position.y = y - PLAYER_SIZE.h;
+        this.verticalSpeed = 0;
+      }
     }
+  }
 }
 
 Player.prototype.collideScreen = function(position) {
-    if (position.x < 0) position.x = 0;
-    if (position.x + PLAYER_SIZE.w > SCREEN_SIZE.w) position.x = SCREEN_SIZE.w - PLAYER_SIZE.w;
-    if (position.y < 0) {
-        position.y = 0;
-        this.verticalSpeed = 0;
-    }
-    if (position.y + PLAYER_SIZE.h > SCREEN_SIZE.h) {
-        position.y = SCREEN_SIZE.h - PLAYER_SIZE.h;
-        this.verticalSpeed = 0;
-    }
+  if (position.x < 0) position.x = 0;
+  if (position.x + PLAYER_SIZE.w > SCREEN_SIZE.w) position.x = SCREEN_SIZE.w - PLAYER_SIZE.w;
+  if (position.y < 0) {
+    position.y = 0;
+    this.verticalSpeed = 0;
+  }
+  if (position.y + PLAYER_SIZE.h > SCREEN_SIZE.h) {
+    position.y = SCREEN_SIZE.h - PLAYER_SIZE.h;
+    this.verticalSpeed = 0;
+  }
 }
 
 
 //
 // Below are constants used in the game
 //
-var PLAYER_SIZE = new Size(40, 40);         // The size of the player
-var SCREEN_SIZE = new Size(600, 560);       // The size of the game screen
-var PLAYER_INIT_POS  = new Point(0, 0);     // The initial position of the player
+var PLAYER_SIZE = new Size(40, 40); // The size of the player
+var SCREEN_SIZE = new Size(600, 560); // The size of the game screen
+var PLAYER_INIT_POS = new Point(0, 0); // The initial position of the player
+var MONSTER_DISTANCE = 200; // Distance of ghost from the player
+var MOVE_DISPLACEMENT = 5; // The speed of the player in motion
+var JUMP_SPEED = 15; // The speed of the player jumping
+var VERTICAL_DISPLACEMENT = 1; // The displacement of vertical speed
 
-var MOVE_DISPLACEMENT = 5;                  // The speed of the player in motion
-var JUMP_SPEED = 15;                        // The speed of the player jumping
-var VERTICAL_DISPLACEMENT = 1;              // The displacement of vertical speed
-
-var GAME_INTERVAL = 25;                     // The time interval of running the game
+var GAME_INTERVAL = 25; // The time interval of running the game
 
 
 //
 // Variables in the game
 //
-var motionType = {NONE:0, LEFT:1, RIGHT:2}; // Motion enum
-var facingType = {LEFT:0, RIGHT: 1};
+var motionType = {
+  NONE: 0,
+  LEFT: 1,
+  RIGHT: 2
+}; // Motion enum
+var facingType = {
+  LEFT: 0,
+  RIGHT: 1
+};
 
-var player = null;                          // The player object
-var gameInterval = null;                    // The interval
-var zoom = 1.0;                             // The zoom level of the screen
+var player = null; // The player object
+var gameInterval = null; // The interval
+var countDownInterval = null;
+var zoom = 1.0; // The zoom level of the screen
 
 var BULLET_SIZE = new Size(10, 10); // The size of a bullet
-var BULLET_SPEED = 10.0;            // The speed of a bullet
-                                    //  = pixels it moves each game loop
-var SHOOT_INTERVAL = 200.0;         // The period when shooting is disabled
-var canShoot = true;                // A flag indicating whether the player can shoot a bullet
+var BULLET_SPEED = 10.0; // The speed of a bullet
+//  = pixels it moves each game loop
+var SHOOT_INTERVAL = 200.0; // The period when shooting is disabled
+var canShoot = true; // A flag indicating whether the player can shoot a bullet
 
 var MONSTER_SIZE = new Size(40, 40); // The size of a monster
 var MONSTER_SPEED = 1.0;
 
+var time_left = 60;
+var bullets_left = 8;
+
+function rng(vmin, vmax) {
+  return vmin + Math.floor((vmax - vmin) * Math.random());
+}
 
 // Should be executed after the page is loaded
 function load(player_name) {
-    // Attach keyboard events
-    document.addEventListener("keydown", keydown, false);
-    document.addEventListener("keyup", keyup, false);
+  // Attach keyboard events
+  document.addEventListener("keydown", keydown, false);
+  document.addEventListener("keyup", keyup, false);
 
-    // Create the player
-    player = new Player(player_name);
+  // Create the player
+  player = new Player(player_name);
 
-    // Create the monsters
-    createMonster(250, 15);
-    createMonster(400, 15);
-    createMonster(120, 260);
-    createMonster(260, 380);
-    createMonster(200, 500);
-    createMonster(400, 500);
+  // Create the monsters
+  for (i = 0; i < 6; i++) {
+    createMonster(i == 0);
+  }
 
-    // Start the game interval
-    gameInterval = setInterval("gamePlay()", GAME_INTERVAL);
+  // Start the game interval
+  gameInterval = setInterval("gamePlay()", GAME_INTERVAL);
 }
 
 
 //
 // This function creates the monsters in the game
 //
-function createMonster(x, y) {
-    var monster = document.createElementNS("http://www.w3.org/2000/svg", "use");
-    monster.setAttribute("initx", x);
-    monster.setAttribute("x", x);
-    monster.setAttribute("y", y);
-    monster.setAttribute("direction", facingType.RIGHT)
-    monster.setAttributeNS("http://www.w3.org/1999/xlink", "xlink:href", "#monster");
-    document.getElementById("monsters").appendChild(monster);
-}
+function createMonster(shootable) {
+  var startx = Math.floor(rng(MONSTER_DISTANCE, SCREEN_SIZE.w - MONSTER_SIZE.w));
+  var starty = Math.floor(rng(MONSTER_DISTANCE, SCREEN_SIZE.h - MONSTER_SIZE.h));
+  var endx = Math.floor(rng(MONSTER_DISTANCE, SCREEN_SIZE.w - MONSTER_SIZE.w));
 
+  var monster = document.createElementNS("http://www.w3.org/2000/svg", "use");
+  monster.shootable = shootable;
+  monster.setAttribute("initx", startx);
+  monster.setAttribute("x", startx);
+  monster.setAttribute("y", starty);
+  monster.setAttribute("endx", endx);
+  monster.setAttribute("direction", facingType.RIGHT)
+  monster.setAttributeNS("http://www.w3.org/1999/xlink", "xlink:href", "#monster");
+  document.getElementById("monsters").appendChild(monster);
+}
 
 
 //
 // This function shoots a bullet from the player
 //
 function shootBullet() {
-    // Disable shooting for a short period of time
-    canShoot = false;
-    setTimeout("canShoot = true", SHOOT_INTERVAL);
+  // Disable shooting for a short period of time
+  canShoot = false;
+  setTimeout("canShoot = true", SHOOT_INTERVAL);
 
-    // Create the bullet using the use node
-    var bullet = document.createElementNS("http://www.w3.org/2000/svg", "use");
-    if (player.facing == facingType.RIGHT) {
-      x = player.position.x + PLAYER_SIZE.w / 2 - BULLET_SIZE.w / 2;
-    }
-    else {
-      x = player.position.x + BULLET_SIZE.w / 2;
-    }
+  // Create the bullet using the use node
+  var bullet = document.createElementNS("http://www.w3.org/2000/svg", "use");
 
-    bullet.setAttribute("direction", player.facing)
-    bullet.setAttribute("x", x);
-    bullet.setAttribute("y", player.position.y + PLAYER_SIZE.h / 2 - BULLET_SIZE.h / 2);
-    bullet.setAttributeNS("http://www.w3.org/1999/xlink", "xlink:href", "#bullet");
-    document.getElementById("bullets").appendChild(bullet);
+  if (player.facing == facingType.RIGHT) {
+    x = player.position.x + PLAYER_SIZE.w / 2 - BULLET_SIZE.w / 2;
+  } else {
+    x = player.position.x + BULLET_SIZE.w / 2;
+  }
+
+  bullet.setAttribute("direction", player.facing)
+  bullet.setAttribute("x", x);
+  bullet.setAttribute("y", player.position.y + PLAYER_SIZE.h / 2 - BULLET_SIZE.h / 2);
+  bullet.setAttributeNS("http://www.w3.org/1999/xlink", "xlink:href", "#bullet");
+  document.getElementById("bullets").appendChild(bullet);
+}
+
+
+function movePlayer() {
+  // Check whether the player is on a platform
+  var isOnPlatform = player.isOnPlatform();
+
+  // Update player position
+  var displacement = new Point();
+
+  // Move left or right
+  if (player.motion == motionType.LEFT)
+    displacement.x = -MOVE_DISPLACEMENT;
+  if (player.motion == motionType.RIGHT)
+    displacement.x = MOVE_DISPLACEMENT;
+
+  // Fall
+  if (!isOnPlatform && player.verticalSpeed <= 0) {
+    displacement.y = -player.verticalSpeed;
+    player.verticalSpeed -= VERTICAL_DISPLACEMENT;
+  }
+
+  // Jump
+  if (player.verticalSpeed > 0) {
+    displacement.y = -player.verticalSpeed;
+    player.verticalSpeed -= VERTICAL_DISPLACEMENT;
+    if (player.verticalSpeed <= 0)
+      player.verticalSpeed = 0;
+  }
+
+  // Get the new position of the player
+  var position = new Point();
+  position.x = player.position.x + displacement.x;
+  position.y = player.position.y + displacement.y;
+
+  // Check collision with platforms and screen
+  player.collidePlatform(position);
+  player.collideScreen(position);
+
+  // Set the location back to the player object (before update the screen)
+  player.position = position;
 }
 
 
 function moveMonsters() {
-    // Go through all bullets
-    var monsters = document.getElementById("monsters");
-    for (var i = 0; i < monsters.childNodes.length; i++) {
-        var node = monsters.childNodes.item(i);
+  // Go through all bullets
+  var monsters = document.getElementById("monsters");
+  for (var i = 0; i < monsters.childNodes.length; i++) {
+    var node = monsters.childNodes.item(i);
+    var initx = parseInt(node.getAttribute("initx"));
+    var endx = parseInt(node.getAttribute("endx"));
+    var x = parseInt(node.getAttribute("x"));
+    var velocity = (node.getAttribute("direction") == facingType.RIGHT) ? MONSTER_SPEED : -MONSTER_SPEED;
 
-        // Update the position of the bullet
-        var initx = parseInt(node.getAttribute("initx"));
-        var x = parseInt(node.getAttribute("x"));
+    if (node.shootable) {
 
-
-        var velocity = (node.getAttribute("direction") == facingType.RIGHT) ? MONSTER_SPEED : -MONSTER_SPEED;
-
-        node.setAttribute("x", x + velocity);
-
-        if (x >= initx + 40) {
-          node.setAttribute("direction", facingType.LEFT);
-        }
-
-        if (x <= initx) {
-          node.setAttribute("direction", facingType.RIGHT);
-        }
-
-        var w = MONSTER_SIZE.w / 2;
-        var scale = (node.getAttribute("direction") == facingType.LEFT) ? "-1" : "1";
-        // node.setAttribute("transform", "translate(" + x + ", 0) scale(" + scale + ", 1) translate(-" + w + ", 0)");
-        // If the bullet is not inside the screen delete it from the group
-        // if (x > SCREEN_SIZE.w) {
-        //     bullets.removeChild(node);
-        //     i--;
-        // }
     }
+
+    node.setAttribute("x", x + velocity);
+
+    if (x >= Math.max(initx, endx)) {
+      node.setAttribute("direction", facingType.LEFT);
+    }
+
+    if (x <= Math.min(initx, endx)) {
+      node.setAttribute("direction", facingType.RIGHT);
+    }
+
+    var w = MONSTER_SIZE.w / 2;
+    var scale = (node.getAttribute("direction") == facingType.LEFT) ? "-1" : "1";
+
+    node.setAttribute("transform", "translate(" + (x + w) + ", 0) scale(" + scale + ", 1) translate(-" + (x + w) + ", 0)");
+  }
 }
 
 
@@ -227,56 +278,54 @@ function moveMonsters() {
 // This function updates the position of the bullets
 //
 function moveBullets() {
-    // Go through all bullets
-    var bullets = document.getElementById("bullets");
-    for (var i = 0; i < bullets.childNodes.length; i++) {
-        var node = bullets.childNodes.item(i);
+  // Go through all bullets
+  var bullets = document.getElementById("bullets");
+  for (var i = 0; i < bullets.childNodes.length; i++) {
+    var node = bullets.childNodes.item(i);
 
-        // Update the position of the bullet
-        var x = parseInt(node.getAttribute("x"));
-        var velocity = (node.getAttribute("direction") == facingType.RIGHT) ? BULLET_SPEED : -BULLET_SPEED;
+    // Update the position of the bullet
+    var x = parseInt(node.getAttribute("x"));
+    var velocity = (node.getAttribute("direction") == facingType.RIGHT) ? BULLET_SPEED : -BULLET_SPEED;
 
-        node.setAttribute("x", x + velocity);
+    node.setAttribute("x", x + velocity);
 
-        // If the bullet is not inside the screen delete it from the group
-        if (x > SCREEN_SIZE.w) {
-            bullets.removeChild(node);
-            i--;
-        }
+    // If the bullet is not inside the screen delete it from the group
+    if (x > SCREEN_SIZE.w) {
+      bullets.removeChild(node);
+      i--;
     }
+  }
 }
 
 //
 // This is the keydown handling function for the SVG document
 //
 function keydown(evt) {
-    var keyCode = (evt.keyCode)? evt.keyCode : evt.getKeyCode();
+  var keyCode = (evt.keyCode) ? evt.keyCode : evt.getKeyCode();
 
-    switch (keyCode) {
-        case "A".charCodeAt(0):
-            player.motion = motionType.LEFT;
-            player.facing = facingType.LEFT;
-            break;
+  switch (keyCode) {
+    case "A".charCodeAt(0):
+      player.motion = motionType.LEFT;
+      player.facing = facingType.LEFT;
+      break;
 
-        case "D".charCodeAt(0):
-            player.motion = motionType.RIGHT;
-            player.facing = facingType.RIGHT;
-            break;
-
-
-        // Add your code here
+    case "D".charCodeAt(0):
+      player.motion = motionType.RIGHT;
+      player.facing = facingType.RIGHT;
+      break;
 
 
-        case "W".charCodeAt(0):
-            if (player.isOnPlatform()) {
-                player.verticalSpeed = JUMP_SPEED;
-            }
-            break;
+      // Add your code here
+    case "W".charCodeAt(0):
+      if (player.isOnPlatform()) {
+        player.verticalSpeed = JUMP_SPEED;
+      }
+      break;
 
-		case "H".charCodeAt(0): // spacebar = shoot
-			if (canShoot) shootBullet();
-			break;
-    }
+    case "H".charCodeAt(0): // spacebar = shoot
+      if (canShoot) shootBullet();
+      break;
+  }
 }
 
 
@@ -284,18 +333,18 @@ function keydown(evt) {
 // This is the keyup handling function for the SVG document
 //
 function keyup(evt) {
-    // Get the key code
-    var keyCode = (evt.keyCode)? evt.keyCode : evt.getKeyCode();
+  // Get the key code
+  var keyCode = (evt.keyCode) ? evt.keyCode : evt.getKeyCode();
 
-    switch (keyCode) {
-        case "A".charCodeAt(0):
-            if (player.motion == motionType.LEFT) player.motion = motionType.NONE;
-            break;
+  switch (keyCode) {
+    case "A".charCodeAt(0):
+      if (player.motion == motionType.LEFT) player.motion = motionType.NONE;
+      break;
 
-        case "D".charCodeAt(0):
-            if (player.motion == motionType.RIGHT) player.motion = motionType.NONE;
-            break;
-    }
+    case "D".charCodeAt(0):
+      if (player.motion == motionType.RIGHT) player.motion = motionType.NONE;
+      break;
+  }
 }
 
 
@@ -303,89 +352,50 @@ function keyup(evt) {
 // This function checks collision
 //
 function collisionDetection() {
-    // Check whether the player collides with a monster
-    var monsters = document.getElementById("monsters");
-    for (var i = 0; i < monsters.childNodes.length; i++) {
-        var monster = monsters.childNodes.item(i);
-        var x = parseInt(monster.getAttribute("x"));
-        var y = parseInt(monster.getAttribute("y"));
+  // Check whether the player collides with a monster
+  var monsters = document.getElementById("monsters");
+  for (var i = 0; i < monsters.childNodes.length; i++) {
+    var monster = monsters.childNodes.item(i);
+    var x = parseInt(monster.getAttribute("x"));
+    var y = parseInt(monster.getAttribute("y"));
 
-        if (intersect(new Point(x, y), MONSTER_SIZE, player.position, PLAYER_SIZE)) {
-            alert("Game over!");
-            clearInterval(gameInterval);
-        }
+    if (intersect(new Point(x, y), MONSTER_SIZE, player.position, PLAYER_SIZE)) {
+      die();
     }
+  }
 
-    // Check whether a bullet hits a monster
-    var bullets = document.getElementById("bullets");
-    for (var i = 0; i < bullets.childNodes.length; i++) {
-        var bullet = bullets.childNodes.item(i);
-        var x = parseInt(bullet.getAttribute("x"));
-        var y = parseInt(bullet.getAttribute("y"));
+  // Check whether a bullet hits a monster
+  var bullets = document.getElementById("bullets");
+  for (var i = 0; i < bullets.childNodes.length; i++) {
+    var bullet = bullets.childNodes.item(i);
+    var x = parseInt(bullet.getAttribute("x"));
+    var y = parseInt(bullet.getAttribute("y"));
 
-        for (var j = 0; j < monsters.childNodes.length; j++) {
-            var monster = monsters.childNodes.item(j);
-            var mx = parseInt(monster.getAttribute("x"));
-            var my = parseInt(monster.getAttribute("y"));
+    for (var j = 0; j < monsters.childNodes.length; j++) {
+      var monster = monsters.childNodes.item(j);
+      var mx = parseInt(monster.getAttribute("x"));
+      var my = parseInt(monster.getAttribute("y"));
 
-            if (intersect(new Point(x, y), BULLET_SIZE, new Point(mx, my), MONSTER_SIZE)) {
-                monsters.removeChild(monster);
-                j--;
-                bullets.removeChild(bullet);
-                i--;
-            }
-        }
+      if (intersect(new Point(x, y), BULLET_SIZE, new Point(mx, my), MONSTER_SIZE)) {
+        monsters.removeChild(monster);
+        j--;
+        bullets.removeChild(bullet);
+        i--;
+      }
     }
+  }
 }
 
 //
 // This function updates the position and motion of the player in the system
 //
 function gamePlay() {
-    // Check collisions
-    collisionDetection();
-
-    // Check whether the player is on a platform
-    var isOnPlatform = player.isOnPlatform();
-
-    // Update player position
-    var displacement = new Point();
-
-    // Move left or right
-    if (player.motion == motionType.LEFT)
-        displacement.x = -MOVE_DISPLACEMENT;
-    if (player.motion == motionType.RIGHT)
-        displacement.x = MOVE_DISPLACEMENT;
-
-    // Fall
-    if (!isOnPlatform && player.verticalSpeed <= 0) {
-        displacement.y = -player.verticalSpeed;
-        player.verticalSpeed -= VERTICAL_DISPLACEMENT;
-    }
-
-    // Jump
-    if (player.verticalSpeed > 0) {
-        displacement.y = -player.verticalSpeed;
-        player.verticalSpeed -= VERTICAL_DISPLACEMENT;
-        if (player.verticalSpeed <= 0)
-            player.verticalSpeed = 0;
-    }
-
-    // Get the new position of the player
-    var position = new Point();
-    position.x = player.position.x + displacement.x;
-    position.y = player.position.y + displacement.y;
-
-    // Check collision with platforms and screen
-    player.collidePlatform(position);
-    player.collideScreen(position);
-
-    // Set the location back to the player object (before update the screen)
-    player.position = position;
-
-    moveBullets();
-    moveMonsters();
-    updateScreen();
+  // Check collisions
+  collisionDetection();
+  movePlayer();
+  moveBullets();
+  moveMonsters();
+  updateScreen();
 }
 
 
@@ -395,24 +405,47 @@ function gamePlay() {
 // the position of the player
 //
 function updateScreen() {
-    // Transform the player
-    scale = (player.facing == facingType.LEFT) ? "-1" : "1";
-    // alert(player.width);
-    var w = PLAYER_SIZE.w / 2;
-    player.node_no_name.setAttribute("transform", "translate(" + w + ", 0) scale(" + scale + ", 1) translate(-" + w + ", 0)");
-    player.node.setAttribute("transform", "translate(" + player.position.x + "," + player.position.y + ")");
-    // player.node.setAttribute("transform", "translate(" + player.position.x + "," + player.position.y + ") scale(" + scale + ", 1)");
+  // Transform the player
+  scale = (player.facing == facingType.LEFT) ? "-1" : "1";
+  // alert(player.width);
+  var w = PLAYER_SIZE.w / 2;
+  player.node_no_name.setAttribute("transform", "translate(" + w + ", 0) scale(" + scale + ", 1) translate(-" + w + ", 0)");
+  player.node.setAttribute("transform", "translate(" + player.position.x + "," + player.position.y + ")");
+  // player.node.setAttribute("transform", "translate(" + player.position.x + "," + player.position.y + ") scale(" + scale + ", 1)");
 
-    // Calculate the scaling and translation factors
+  // Calculate the scaling and translation factors
 
-    // Add your code here
+  // Add your code here
 
 }
 
+function die() {
+  alert("Game over!");
+  clearInterval(gameInterval);
+  clearInterval(countDownInterval);
+}
+
+function countDown() {
+  time_left -= 1;
+  if (time_left >= 0) {
+    document.getElementById("time").textContent = "" + time_left + " sec";
+  }
+  if (time_left < 0) {
+    die();
+  }
+}
+
+function startTimer() {
+  countDownInterval = setInterval("countDown()", 1000);
+}
+
 function startGame() {
-    var player_name = prompt("Enter your name:");
-    var button = document.getElementById("button");
-    var startScreen = document.getElementById("startscreen");
-    startScreen.setAttribute("visibility", "hidden");
-    load(player_name);
+  // var player_name = prompt("Enter your name:");
+  document.getElementById("time").textContent = "" + time_left + " sec";
+  player_name = "Hi";
+  var button = document.getElementById("button");
+  var startScreen = document.getElementById("startscreen");
+  startScreen.setAttribute("visibility", "hidden");
+  startTimer();
+  load(player_name);
 }
