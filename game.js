@@ -58,6 +58,7 @@ var EXIT_POSITION = new Point(520, 500);
 
 
 // Variablesd
+var cheatMode = false;
 var currentLevel = 0;
 var score = 0;
 
@@ -467,6 +468,14 @@ function keydown(evt) {
         shootBullet();
       }
       break;
+
+    case "C".charCodeAt(0):
+      cheatMode = true;
+      break;
+
+    case "V".charCodeAt(0):
+      cheatMode = false;
+      break;
   }
 }
 
@@ -503,7 +512,9 @@ function collisionDetection() {
     var y = parseInt(monster.getAttribute("y"));
 
     if (intersect(new Point(x, y), MONSTER_SIZE, player.position, PLAYER_SIZE)) {
-      die();
+      if (!cheatMode) {
+        die();
+      }
     }
   }
 
@@ -554,7 +565,9 @@ function collisionDetection() {
     if (intersect(new Point(x, y), BULLET_SIZE, player.position, PLAYER_SIZE)) {
       bullets.removeChild(bullet);
       i--;
-      die();
+      if (!cheatMode) {
+        die();
+      }
     }
   }
 
