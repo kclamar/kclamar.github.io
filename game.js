@@ -1,3 +1,19 @@
+function playSound(src) {
+  (new Audio(src)).play();
+}
+
+SOUND_BACKGROUND = "sounds/background.mp3";
+SOUND_PLAYER_DIES = "sounds/death.mp3";
+SOUND_MONSTER_DIES = "sounds/death.ogg";
+SOUND_SHOOT = "sounds/shoot.ogg";
+SOUND_LEVEL_UP = "sounds/levelup.ogg";
+
+backgroundSound = new Audio(SOUND_BACKGROUND);
+backgroundSound.loop = true;
+backgroundSound.volume = .2;
+playerDiesSound = new Audio(SOUND_PLAYER_DIES);
+
+
 // Classes for point and size
 function Point(x, y) {
   this.x = (x) ? parseFloat(x) : 0.0;
@@ -209,8 +225,8 @@ function createGoodThing() {
   var pos = new Point(0, 0);
 
   do {
-    pos.x = Math.floor(rng(0, SCREEN_SIZE.w - GOOD_THING_SIZE.w));
-    pos.y = Math.floor(rng(0, SCREEN_SIZE.h - GOOD_THING_SIZE.h));
+    pos.x = Math.floor(rng(0, SCREEN_SIZE.w - GOOD_THING_SIZE.w - 40));
+    pos.y = Math.floor(rng(0, SCREEN_SIZE.h - GOOD_THING_SIZE.h - 40));
   }
   while (collidePlatform(pos));
 
@@ -325,6 +341,7 @@ function shootBullet() {
   bullet.setAttribute("y", player.position.y + PLAYER_SIZE.h / 2 - BULLET_SIZE.h / 2);
   bullet.setAttributeNS("http://www.w3.org/1999/xlink", "xlink:href", "#bullet");
   document.getElementById("bullets").appendChild(bullet);
+  playSound(SOUND_SHOOT);
 }
 
 // Moves player
@@ -521,6 +538,7 @@ function keyup(evt) {
 function completesLevel() {
   addScore(currentLevel * SCORE_LEVEL + timeLeft * SCORE_TIME);
   numMonsters += NUM_MONSTER_INCREMENT;
+  playSound(SOUND_LEVEL_UP);
   load(playerName);
 }
 
@@ -573,6 +591,7 @@ function collisionDetection() {
         bullets.removeChild(bullet);
         i--;
         addScore(SCORE_MONSTER);
+        playSound(SOUND_MONSTER_DIES);
       }
     }
   }
@@ -635,6 +654,8 @@ function updateScreen() {
 
 // Dies
 function die() {
+  backgroundSound.pause();
+  playerDiesSound.play();
   clearInterval(gameInterval);
   clearInterval(countDownInterval);
   alert("Game over!");
@@ -661,18 +682,20 @@ function updateBulletsNumber() {
     document.getElementById("bulletsnumber").textContent = bulletsLeft;
   }
   else {
-    document.getElementById("bulletsnumber").textContent = "Infinite"; 
+    document.getElementById("bulletsnumber").textContent = "Infinite";
   }
 }
 
 // Starts game
 function startGame(debug = false) {
+
   document.getElementById("time").textContent = "" + timeLeft + " sec.";
   updateBulletsNumber();
 
   var button = document.getElementById("button");
   var startScreen = document.getElementById("startscreen");
   playerName = (debug) ? "" : prompt("Enter your name:");
+  backgroundSound.play();
 
   load(playerName);
   startScreen.setAttribute("visibility", "hidden");
