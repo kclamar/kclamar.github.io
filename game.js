@@ -56,6 +56,8 @@ var player = null; // Player object
 var canShoot = true; // Whether the player can shoot a bullet
 var bullets_left = 8; // Number of bullets left
 
+var good_thing_left = NUM_GOOD_THINGS;
+
 
 // Helper function for checking intersection between two rectangles
 function intersect(pos1, size1, pos2, size2) {
@@ -63,6 +65,47 @@ function intersect(pos1, size1, pos2, size2) {
     pos1.y < pos2.y + size2.h && pos1.y + size1.h > pos2.y);
 }
 
+// Generates random integer from vmin to vmax - 1
+function rng(vmin, vmax) {
+  return vmin + Math.floor((vmax - vmin) * Math.random());
+}
+
+function collidePlatform(position) {
+  var platforms = document.getElementById("platforms");
+  for (var i = 0; i < platforms.childNodes.length; ++i) {
+    var node = platforms.childNodes.item(i);
+    if (node.nodeName != "rect") continue;
+
+    var x = parseFloat(node.getAttribute("x"));
+    var y = parseFloat(node.getAttribute("y"));
+    var w = parseFloat(node.getAttribute("width"));
+    var h = parseFloat(node.getAttribute("height"));
+    var pos = new Point(x, y);
+    var size = new Size(w, h);
+
+    if (intersect(position, GOOD_THING_SIZE, pos, size)) {
+      return true;
+    }
+  }
+
+  var goodThings = document.getElementById("goodthings");
+
+  for (var i = 0; i < goodThings.childNodes.length; i++) {
+    var goodThing = goodThings.childNodes.item(i);
+    var x = parseInt(goodThing.getAttribute("x"));
+    var y = parseInt(goodThing.getAttribute("y"));
+
+    if (intersect(position, GOOD_THING_SIZE, new Point(x, y), GOOD_THING_SIZE)) {
+      return true;
+    }
+  }
+
+  if (intersect(position, GOOD_THING_SIZE, player.position, PLAYER_SIZE)) {
+    return true;
+  }
+
+  return false;
+}
 
 // Player class
 function Player(name) {
@@ -136,9 +179,21 @@ Player.prototype.collideScreen = function(position) {
   }
 }
 
-// Generates random integer from vmin to vmax - 1
-function rng(vmin, vmax) {
-  return vmin + Math.floor((vmax - vmin) * Math.random());
+// Good thing class
+function createGoodThing() {
+  var pos = new Point(0, 0);
+
+  do {
+    pos.x = Math.floor(rng(0, SCREEN_SIZE.w - GOOD_THING_SIZE.w));
+    pos.y = Math.floor(rng(0, SCREEN_SIZE.h - GOOD_THING_SIZE.h));
+  }
+  while (collidePlatform(pos));
+
+  node = document.createElementNS("http://www.w3.org/2000/svg", "use");
+  node.setAttribute("x", pos.x);
+  node.setAttribute("y", pos.y);
+  node.setAttributeNS("http://www.w3.org/1999/xlink", "xlink:href", "#goodthing");
+  document.getElementById("goodthings").appendChild(node);
 }
 
 // Executed after the page is loaded
@@ -178,18 +233,6 @@ function createMonster(shootable) {
   monster.setAttribute("direction", facingType.RIGHT)
   monster.setAttributeNS("http://www.w3.org/1999/xlink", "xlink:href", "#monster");
   document.getElementById("monsters").appendChild(monster);
-}
-
-// Create a good thing
-function createGoodThing() {
-  var x = Math.floor(rng(0, SCREEN_SIZE.w - MONSTER_SIZE.w));
-  var y = Math.floor(rng(0, SCREEN_SIZE.h - MONSTER_SIZE.h));
-
-  var goodThing = document.createElementNS("http://www.w3.org/2000/svg", "use");
-  goodThing.setAttribute("x", x);
-  goodThing.setAttribute("y", y);
-  goodThing.setAttributeNS("http://www.w3.org/1999/xlink", "xlink:href", "#goodthing");
-  document.getElementById("goodthings").appendChild(goodThing);
 }
 
 // Shoots a bullet from the player
@@ -360,6 +403,19 @@ function collisionDetection() {
 
     if (intersect(new Point(x, y), MONSTER_SIZE, player.position, PLAYER_SIZE)) {
       die();
+    }
+  }
+
+  var goodThings = document.getElementById("goodthings");
+
+  for (var i = 0; i < goodThings.childNodes.length; i++) {
+    var goodThing = goodThings.childNodes.item(i);
+    var x = parseInt(goodThing.getAttribute("x"));
+    var y = parseInt(goodThing.getAttribute("y"));
+
+    if (intersect(player.position, PLAYER_SIZE, new Point(x, y), GOOD_THING_SIZE)) {
+      goodThings.removeChild(goodThing);
+      i--;
     }
   }
 
