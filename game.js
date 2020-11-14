@@ -40,7 +40,8 @@ var JUMP_SPEED = 15; // Speed of the player jumping
 var VERTICAL_DISPLACEMENT = 1; // Displacement of vertical speed
 var SHOOT_INTERVAL = 200.0; // The period when shooting is disabled
 
-var NUM_MONSTERS = 2; // Number of monsters
+var INIT_NUM_MONSTERS = 6; // Number of monsters
+var NUM_MONSTER_INCREMENT = 4;
 var MONSTER_SIZE = new Size(40, 40); // Size of a monster
 var MONSTER_SPEED = 1.0; // Speed of monsters
 var MONSTER_DISTANCE = 120; // Minimum initial distance of monsters from the player
@@ -49,7 +50,7 @@ var BULLET_SIZE = new Size(10, 10); // Size of a bullet
 var BULLET_SPEED = 10.0; // Speed of a bullet
 var NUM_BULLETS = 8; // Number of bullets
 
-var NUM_GOOD_THINGS = 1; // Number of good things
+var NUM_GOOD_THINGS = 8; // Number of good things
 var GOOD_THING_SIZE = new Size(40, 40); // Size of the good things
 
 var EXIT_SIZE = new Size(40, 40);
@@ -70,6 +71,7 @@ var playerName = "";
 var canShoot = true; // Whether the player can shoot a bullet
 var bulletsLeft = NUM_BULLETS; // Number of bullets left
 
+var numMonsters = INIT_NUM_MONSTERS;
 var goodThingsLeft = NUM_GOOD_THINGS;
 
 
@@ -251,7 +253,7 @@ function load(playerName) {
   createExit();
 
   // Create the monsters
-  for (i = 0; i < NUM_MONSTERS; i++) {
+  for (i = 0; i < numMonsters; i++) {
     createMonster(i == 0);
   }
 
@@ -486,11 +488,8 @@ function keyup(evt) {
 
 // When player completes the level
 function completesLevel() {
-  alert(currentLevel);
-  alert(timeLeft);
-  alert(SCORE_LEVEL);
-  alert(SCORE_TIME);
   addScore(currentLevel * SCORE_LEVEL + timeLeft * SCORE_TIME);
+  numMonsters += NUM_MONSTER_INCREMENT;
   load(playerName);
 }
 
