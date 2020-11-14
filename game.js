@@ -783,7 +783,29 @@ function die() {
   playerDiesSound.play();
   clearInterval(gameInterval);
   clearInterval(countDownInterval);
-  alert("Game over!");
+  var highScoreTable = getHighScoreTable();
+
+  // // Create the new score record
+  var record = new ScoreRecord(playerName, score);
+
+  // // Insert the new score record
+  var position = 0;
+  while (position < highScoreTable.length) {
+      var curPositionScore = highScoreTable[position].score;
+      if (curPositionScore < score)
+          break;
+
+      position++;
+  }
+
+  if (position < 5)
+      highScoreTable.splice(position, 0, record);
+
+  // Store the new high score table
+  setHighScoreTable(highScoreTable);
+
+  // Show the high score table
+  showHighScoreTable(highScoreTable, position);
 }
 
 // Counts down by 1 second
@@ -811,20 +833,39 @@ function updateBulletsNumber() {
   }
 }
 
-// Starts game
-function startGame(debug = false) {
+function onLoad() {
   disappearingPlatformParents = [
     document.getElementById("disappearingplatform0").parentNode,
     document.getElementById("disappearingplatform1").parentNode,
     document.getElementById("disappearingplatform2").parentNode
   ];
+}
 
+// Starts game
+function startGame(debug = false) {
+  currentLevel = 0;
+  score = 0;
+  var monsters = document.getElementById("monsters");
+  while (monsters.firstChild) {
+      monsters.firstChild.remove();
+  }
+
+  var goodThings = document.getElementById("goodthings");
+  while (goodThings.firstChild) {
+      goodThings.firstChild.remove();
+  }
+
+  document.getElementById("highscoretable").style.setProperty("visibility", "hidden", null);
   document.getElementById("time").textContent = "" + timeLeft + " sec.";
   updateBulletsNumber();
 
   var button = document.getElementById("button");
   var startScreen = document.getElementById("startscreen");
-  playerName = (debug) ? "" : prompt("Enter your name:");
+  playerName = (debug) ? "Anonymous" : prompt("Enter your name:", playerName);
+  if (playerName == "") {
+    playerName = "Anonymous";
+  }
+
   backgroundSound.play();
 
   load(playerName);
