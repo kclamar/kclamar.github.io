@@ -213,11 +213,19 @@ function createExit() {
 
 // Executed after the page is loaded
 function load(playerName) {
+  if (gameInterval != null) {
+    clearInterval(gameInterval);
+  }
+
+  if (countDownInterval != null) {
+    clearInterval(countDownInterval);
+  }
+
   startTimer();
   currentLevel++;
   document.getElementById("levelnumber").textContent = currentLevel;
   timeLeft = TIME_LIMIT;
-  document.getElementById("time").textContent = timeLeft;
+  document.getElementById("time").textContent = "" + timeLeft + " sec.";
   bulletsLeft = NUM_BULLETS;
   document.getElementById("bulletsnumber").textContent = bulletsLeft;
   goodThingsLeft = NUM_GOOD_THINGS;
