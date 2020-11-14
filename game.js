@@ -71,6 +71,7 @@ var SOUND_SHOOT = "sounds/shoot.ogg";
 var SOUND_LEVEL_UP = "sounds/levelup.ogg";
 var VERTICAL_PLATFORM_TOP = 100;
 var VERTICAL_PLATFORM_BOTTOM = 300;
+var VERTICAL_PLATFORM_INIT_Y = 100;
 
 
 // Variablesd
@@ -702,6 +703,7 @@ function addScore(amount) {
 
 // Executed after the page is loaded
 function load(playerName) {
+  document.getElementById("verticalplatform").setAttribute("y", VERTICAL_PLATFORM_INIT_Y);
   if (gameInterval != null) {
     clearInterval(gameInterval);
   }
@@ -845,6 +847,7 @@ function onLoad() {
 function startGame(debug = false) {
   currentLevel = 0;
   score = 0;
+  addScore(0);
   numMonsters = INIT_NUM_MONSTERS;
 
   var monsters = document.getElementById("monsters");
@@ -869,6 +872,7 @@ function startGame(debug = false) {
     playerName = "Anonymous";
   }
 
+  backgroundSound.currentTime = 0;
   backgroundSound.play();
 
   load(playerName);
