@@ -520,8 +520,10 @@ function moveBullets() {
 
     // If the bullet is not inside the screen delete it from the group
     if ((x > SCREEN_SIZE.w) || (x < 0)) {
-      bullets.removeChild(node);
-      i--;
+      if (bullets.contains(node)) {
+        bullets.removeChild(node);
+        i--;
+      }
     }
   }
 }
@@ -655,8 +657,10 @@ function collisionDetection() {
       if (intersect(new Point(x, y), BULLET_SIZE, new Point(mx, my), MONSTER_SIZE)) {
         monsters.removeChild(monster);
         j--;
-        bullets.removeChild(bullet);
-        i--;
+        if (bullets.contains(node)) {
+          bullets.removeChild(node);
+          i--;
+        }
         addScore(SCORE_MONSTER);
         playSound(SOUND_MONSTER_DIES);
       }
@@ -703,6 +707,11 @@ function addScore(amount) {
 
 // Executed after the page is loaded
 function load(playerName) {
+  var monsters = document.getElementById("monsters");
+  while (monsters.firstChild) {
+      monsters.firstChild.remove();
+  }
+
   document.getElementById("verticalplatform").setAttribute("y", VERTICAL_PLATFORM_INIT_Y);
   if (gameInterval != null) {
     clearInterval(gameInterval);
