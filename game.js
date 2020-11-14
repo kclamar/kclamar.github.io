@@ -56,6 +56,14 @@ var GOOD_THING_SIZE = new Size(40, 40); // Size of the good things
 var EXIT_SIZE = new Size(40, 40);
 var EXIT_POSITION = new Point(520, 500);
 
+var PORTAL1_SIZE = new Size(40, 40);
+var PORTAL2_SIZE = new Size(40, 40);
+var PORTAL1_POSITION = new Point(180, 120);
+var PORTAL2_POSITION = new Point(0, 440);
+
+var PORTAL2_DESTINATION = new Point(140, 120);
+var PORTAL1_DESTINATION = new Point(40, 440);
+
 
 // Variablesd
 var cheatMode = false;
@@ -219,6 +227,13 @@ function createExit() {
   node.setAttribute("transform", "translate(" + EXIT_POSITION.x + "," + EXIT_POSITION.y + ")");
 }
 
+function createPortals() {
+  portal1 = document.getElementById("portal1");
+  portal1.setAttribute("transform", "translate(" + PORTAL1_POSITION.x + "," + PORTAL1_POSITION.y + ")");
+  portal2 = document.getElementById("portal2");
+  portal2.setAttribute("transform", "translate(" + PORTAL2_POSITION.x + "," + PORTAL2_POSITION.y + ")");
+}
+
 function addScore(amount) {
   score += amount;
   document.getElementById("score").textContent = score;
@@ -241,7 +256,7 @@ function load(playerName) {
   timeLeft = TIME_LIMIT;
   document.getElementById("time").textContent = "" + timeLeft + " sec.";
   bulletsLeft = NUM_BULLETS;
-  document.getElementById("bulletsnumber").textContent = bulletsLeft;
+  updateBulletsNumber();
   goodThingsLeft = NUM_GOOD_THINGS;
 
   // Attach keyboard events
@@ -252,6 +267,7 @@ function load(playerName) {
   player = new Player(playerName);
 
   createExit();
+  createPortals();
 
   // Create the monsters
   for (i = 0; i < numMonsters; i++) {
@@ -285,8 +301,12 @@ function createMonster(shootable) {
 
 // Shoots a bullet from the player
 function shootBullet() {
-  bulletsLeft--;
-  document.getElementById("bulletsnumber").textContent = bulletsLeft;
+  if (!cheatMode) {
+    bulletsLeft--;
+  }
+
+  updateBulletsNumber();
+
   // Disable shooting for a short period of time
   canShoot = false;
   setTimeout("canShoot = true", SHOOT_INTERVAL);
@@ -464,17 +484,19 @@ function keydown(evt) {
       break;
 
     case "H".charCodeAt(0):
-      if (canShoot && (bulletsLeft > 0)) {
+      if (cheatMode || (canShoot && (bulletsLeft > 0))) {
         shootBullet();
       }
       break;
 
     case "C".charCodeAt(0):
       cheatMode = true;
+      updateBulletsNumber();
       break;
 
     case "V".charCodeAt(0):
       cheatMode = false;
+      updateBulletsNumber();
       break;
   }
 }
@@ -577,6 +599,15 @@ function collisionDetection() {
       completesLevel();
     }
   }
+
+  if (intersect(PORTAL1_POSITION, PORTAL1_SIZE, player.position, PLAYER_SIZE)) {
+    player.position.x = PORTAL1_DESTINATION.x;
+    player.position.y = PORTAL1_DESTINATION.y;
+  }
+  else if (intersect(PORTAL2_POSITION, PORTAL2_SIZE, player.position, PLAYER_SIZE)) {
+    player.position.x = PORTAL2_DESTINATION.x;
+    player.position.y = PORTAL2_DESTINATION.y;
+  }
 }
 
 // Updates position and motion of the player
@@ -625,10 +656,19 @@ function startTimer() {
   countDownInterval = setInterval("countDown()", 1000);
 }
 
+function updateBulletsNumber() {
+  if (!cheatMode) {
+    document.getElementById("bulletsnumber").textContent = bulletsLeft;
+  }
+  else {
+    document.getElementById("bulletsnumber").textContent = "Infinite"; 
+  }
+}
+
 // Starts game
 function startGame(debug = false) {
   document.getElementById("time").textContent = "" + timeLeft + " sec.";
-  document.getElementById("bulletsnumber").textContent = bulletsLeft;
+  updateBulletsNumber();
 
   var button = document.getElementById("button");
   var startScreen = document.getElementById("startscreen");
