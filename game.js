@@ -24,6 +24,11 @@ var facingType = {
 
 
 // Constants
+var SCORE_LEVEL = 100;
+var SCORE_TIME = 2;
+var SCORE_MONSTER = 10;
+var SCORE_GOOD_THING = 15;
+
 var TIME_LIMIT = 60;
 var GAME_INTERVAL = 25; // Time interval of running the game
 var SCREEN_SIZE = new Size(600, 560); // Size of the game screen
@@ -211,6 +216,11 @@ function createExit() {
   node.setAttribute("transform", "translate(" + EXIT_POSITION.x + "," + EXIT_POSITION.y + ")");
 }
 
+function addScore(amount) {
+  score += amount;
+  document.getElementById("score").textContent = score;
+}
+
 // Executed after the page is loaded
 function load(playerName) {
   if (gameInterval != null) {
@@ -222,6 +232,7 @@ function load(playerName) {
   }
 
   startTimer();
+
   currentLevel++;
   document.getElementById("levelnumber").textContent = currentLevel;
   timeLeft = TIME_LIMIT;
@@ -475,6 +486,11 @@ function keyup(evt) {
 
 // When player completes the level
 function completesLevel() {
+  alert(currentLevel);
+  alert(timeLeft);
+  alert(SCORE_LEVEL);
+  alert(SCORE_TIME);
+  addScore(currentLevel * SCORE_LEVEL + timeLeft * SCORE_TIME);
   load(playerName);
 }
 
@@ -503,6 +519,7 @@ function collisionDetection() {
       goodThings.removeChild(goodThing);
       i--;
       goodThingsLeft--;
+      addScore(SCORE_GOOD_THING);
     }
   }
 
@@ -523,6 +540,7 @@ function collisionDetection() {
         j--;
         bullets.removeChild(bullet);
         i--;
+        addScore(SCORE_MONSTER);
       }
     }
   }
