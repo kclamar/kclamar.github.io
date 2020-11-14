@@ -50,13 +50,15 @@ var GOOD_THING_SIZE = new Size(40, 40); // Size of the good things
 var gameInterval = null; // Game interval
 var countDownInterval = null; // Countdown interval
 var zoom = 1.0; // Zoom level of the screen
-var time_left = 60; // Amount of time left in seconds
+var timeLeft = 60; // Amount of time left in seconds
 
 var player = null; // Player object
 var canShoot = true; // Whether the player can shoot a bullet
-var bullets_left = 8; // Number of bullets left
+var bulletsLeft = 8; // Number of bullets left
 
-var good_thing_left = NUM_GOOD_THINGS;
+var goodThingsLeft = NUM_GOOD_THINGS;
+
+var monsterCanShoot = true; // Whether the monster can shoot a bullet
 
 
 // Helper function for checking intersection between two rectangles
@@ -237,6 +239,8 @@ function createMonster(shootable) {
 
 // Shoots a bullet from the player
 function shootBullet() {
+  bulletsLeft--;
+  document.getElementById("bulletsnumber").textContent = bulletsLeft;
   // Disable shooting for a short period of time
   canShoot = false;
   setTimeout("canShoot = true", SHOOT_INTERVAL);
@@ -298,6 +302,29 @@ function movePlayer() {
   player.position = position;
 }
 
+// Shoots a bullet from the monster
+function monsterShootsBullet(monster) {
+  if (document.getElementById("monsterbullets").childNodes.length == 0) {
+    // Create the bullet using the use node
+    var bullet = document.createElementNS("http://www.w3.org/2000/svg", "use");
+    var facing = monster.getAttribute("direction");
+    var mx = parseInt(monster.getAttribute("x"));
+    var my = parseInt(monster.getAttribute("y"));
+
+    if (facing == facingType.RIGHT) {
+      x = mx + MONSTER_SIZE.w / 2 - BULLET_SIZE.w / 2;
+    } else {
+      x = mx + BULLET_SIZE.w / 2;
+    }
+
+    bullet.setAttribute("direction", facing)
+    bullet.setAttribute("x", x);
+    bullet.setAttribute("y", my + MONSTER_SIZE.h / 2 - BULLET_SIZE.h / 2);
+    bullet.setAttributeNS("http://www.w3.org/1999/xlink", "xlink:href", "#monsterbullet");
+    document.getElementById("monsterbullets").appendChild(bullet);
+  }
+}
+
 // Moves monsyers
 function moveMonsters() {
   // Go through all bullets
@@ -308,10 +335,6 @@ function moveMonsters() {
     var endx = parseInt(node.getAttribute("endx"));
     var x = parseInt(node.getAttribute("x"));
     var velocity = (node.getAttribute("direction") == facingType.RIGHT) ? MONSTER_SPEED : -MONSTER_SPEED;
-
-    if (node.shootable) {
-
-    }
 
     node.setAttribute("x", x + velocity);
 
@@ -325,6 +348,12 @@ function moveMonsters() {
     var s = (node.getAttribute("direction") == facingType.LEFT) ? -1 : 1;
 
     node.setAttribute("transform", "translate(" + t + ", 0) scale(" + s + ", 1) translate(-" + t + ", 0)");
+
+    if (node.shootable) {
+      if (monsterCanShoot) {
+        monsterShootsBullet(node);
+      }
+    }
   }
 }
 
@@ -342,7 +371,27 @@ function moveBullets() {
     node.setAttribute("x", x + velocity);
 
     // If the bullet is not inside the screen delete it from the group
-    if (x > SCREEN_SIZE.w) {
+    if ((x > SCREEN_SIZE.w) || (x < 0)) {
+      bullets.removeChild(node);
+      i--;
+    }
+  }
+}
+
+function moveMonsterBullets() {
+  // Go through all bullets
+  var bullets = document.getElementById("monsterbullets");
+  for (var i = 0; i < bullets.childNodes.length; i++) {
+    var node = bullets.childNodes.item(i);
+
+    // Update the position of the bullet
+    var x = parseInt(node.getAttribute("x"));
+    var velocity = (node.getAttribute("direction") == facingType.RIGHT) ? BULLET_SPEED : -BULLET_SPEED;
+
+    node.setAttribute("x", x + velocity);
+
+    // If the bullet is not inside the screen delete it from the group
+    if ((x > SCREEN_SIZE.w) || (x < 0)) {
       bullets.removeChild(node);
       i--;
     }
@@ -371,7 +420,9 @@ function keydown(evt) {
       break;
 
     case "H".charCodeAt(0):
-      if (canShoot) shootBullet();
+      if (canShoot && (bulletsLeft > 0)) {
+        shootBullet();
+      }
       break;
   }
 }
@@ -416,6 +467,7 @@ function collisionDetection() {
     if (intersect(player.position, PLAYER_SIZE, new Point(x, y), GOOD_THING_SIZE)) {
       goodThings.removeChild(goodThing);
       i--;
+      goodThingsLeft--;
     }
   }
 
@@ -439,6 +491,20 @@ function collisionDetection() {
       }
     }
   }
+
+  // Check whether a monster bullet hits the player
+  var bullets = document.getElementById("monsterbullets");
+  for (var i = 0; i < bullets.childNodes.length; i++) {
+    var bullet = bullets.childNodes.item(i);
+    var x = parseInt(bullet.getAttribute("x"));
+    var y = parseInt(bullet.getAttribute("y"));
+
+    if (intersect(new Point(x, y), BULLET_SIZE, player.position, PLAYER_SIZE)) {
+      bullets.removeChild(bullet);
+      i--;
+      die();
+    }
+  }
 }
 
 // Updates position and motion of the player
@@ -446,6 +512,7 @@ function gamePlay() {
   collisionDetection();
   movePlayer();
   moveBullets();
+  moveMonsterBullets();
   moveMonsters();
   updateScreen();
 }
@@ -472,10 +539,10 @@ function die() {
 
 // Counts down by 1 second
 function countDown() {
-  time_left -= 1;
+  timeLeft -= 1;
 
-  if (time_left >= 0) {
-    document.getElementById("time").textContent = "" + time_left + " sec";
+  if (timeLeft >= 0) {
+    document.getElementById("time").textContent = "" + timeLeft + " sec.";
   } else {
     die();
   }
@@ -488,7 +555,8 @@ function startTimer() {
 
 // Starts game
 function startGame(debug = false) {
-  document.getElementById("time").textContent = "" + time_left + " sec";
+  document.getElementById("time").textContent = "" + timeLeft + " sec.";
+  document.getElementById("bulletsnumber").textContent = bulletsLeft;
 
   var button = document.getElementById("button");
   var startScreen = document.getElementById("startscreen");
