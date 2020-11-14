@@ -24,6 +24,7 @@ var facingType = {
 
 
 // Constants
+var TIME_LIMIT = 60;
 var GAME_INTERVAL = 25; // Time interval of running the game
 var SCREEN_SIZE = new Size(600, 560); // Size of the game screen
 
@@ -41,6 +42,7 @@ var MONSTER_DISTANCE = 120; // Minimum initial distance of monsters from the pla
 
 var BULLET_SIZE = new Size(10, 10); // Size of a bullet
 var BULLET_SPEED = 10.0; // Speed of a bullet
+var NUM_BULLETS = 8; // Number of bullets
 
 var NUM_GOOD_THINGS = 1; // Number of good things
 var GOOD_THING_SIZE = new Size(40, 40); // Size of the good things
@@ -49,18 +51,19 @@ var EXIT_SIZE = new Size(40, 40);
 var EXIT_POSITION = new Point(520, 500);
 
 
-// Variables
-var currentLevel = 1;
+// Variablesd
+var currentLevel = 0;
 var score = 0;
 
 var gameInterval = null; // Game interval
 var countDownInterval = null; // Countdown interval
 var zoom = 1.0; // Zoom level of the screen
-var timeLeft = 60; // Amount of time left in seconds
+var timeLeft = TIME_LIMIT; // Amount of time left in seconds
 
 var player = null; // Player object
+var playerName = "";
 var canShoot = true; // Whether the player can shoot a bullet
-var bulletsLeft = 8; // Number of bullets left
+var bulletsLeft = NUM_BULLETS; // Number of bullets left
 
 var goodThingsLeft = NUM_GOOD_THINGS;
 
@@ -210,6 +213,15 @@ function createExit() {
 
 // Executed after the page is loaded
 function load(playerName) {
+  startTimer();
+  currentLevel++;
+  document.getElementById("levelnumber").textContent = currentLevel;
+  timeLeft = TIME_LIMIT;
+  document.getElementById("time").textContent = timeLeft;
+  bulletsLeft = NUM_BULLETS;
+  document.getElementById("bulletsnumber").textContent = bulletsLeft;
+  goodThingsLeft = NUM_GOOD_THINGS;
+
   // Attach keyboard events
   document.addEventListener("keydown", keydown, false);
   document.addEventListener("keyup", keyup, false);
@@ -455,7 +467,7 @@ function keyup(evt) {
 
 // When player completes the level
 function completesLevel() {
-  die();
+  load(playerName);
 }
 
 // Collision checking
@@ -524,7 +536,7 @@ function collisionDetection() {
   // Check whether the player hits the exit
   if (intersect(EXIT_POSITION, EXIT_SIZE, player.position, PLAYER_SIZE)) {
     if (goodThingsLeft == 0) {
-      die();
+      completesLevel();
     }
   }
 }
@@ -554,9 +566,9 @@ function updateScreen() {
 
 // Dies
 function die() {
-  alert("Game over!");
   clearInterval(gameInterval);
   clearInterval(countDownInterval);
+  alert("Game over!");
 }
 
 // Counts down by 1 second
@@ -582,9 +594,8 @@ function startGame(debug = false) {
 
   var button = document.getElementById("button");
   var startScreen = document.getElementById("startscreen");
-  var playerName = (debug) ? "" : prompt("Enter your name:");
+  playerName = (debug) ? "" : prompt("Enter your name:");
 
   load(playerName);
   startScreen.setAttribute("visibility", "hidden");
-  startTimer();
 }
