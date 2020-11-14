@@ -845,6 +845,8 @@ function onLoad() {
 function startGame(debug = false) {
   currentLevel = 0;
   score = 0;
+  numMonsters = INIT_NUM_MONSTERS;
+
   var monsters = document.getElementById("monsters");
   while (monsters.firstChild) {
       monsters.firstChild.remove();
@@ -862,7 +864,8 @@ function startGame(debug = false) {
   var button = document.getElementById("button");
   var startScreen = document.getElementById("startscreen");
   playerName = (debug) ? "Anonymous" : prompt("Enter your name:", playerName);
-  if (playerName == "") {
+
+  if ((playerName == "") || (playerName == null)) {
     playerName = "Anonymous";
   }
 
