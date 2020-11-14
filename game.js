@@ -34,7 +34,7 @@ var JUMP_SPEED = 15; // Speed of the player jumping
 var VERTICAL_DISPLACEMENT = 1; // Displacement of vertical speed
 var SHOOT_INTERVAL = 200.0; // The period when shooting is disabled
 
-var NUM_MONSTERS = 6; // Number of monsters
+var NUM_MONSTERS = 2; // Number of monsters
 var MONSTER_SIZE = new Size(40, 40); // Size of a monster
 var MONSTER_SPEED = 1.0; // Speed of monsters
 var MONSTER_DISTANCE = 120; // Minimum initial distance of monsters from the player
@@ -42,11 +42,17 @@ var MONSTER_DISTANCE = 120; // Minimum initial distance of monsters from the pla
 var BULLET_SIZE = new Size(10, 10); // Size of a bullet
 var BULLET_SPEED = 10.0; // Speed of a bullet
 
-var NUM_GOOD_THINGS = 8; // Number of good things
+var NUM_GOOD_THINGS = 1; // Number of good things
 var GOOD_THING_SIZE = new Size(40, 40); // Size of the good things
+
+var EXIT_SIZE = new Size(40, 40);
+var EXIT_POSITION = new Point(520, 500);
 
 
 // Variables
+var currentLevel = 1;
+var score = 0;
+
 var gameInterval = null; // Game interval
 var countDownInterval = null; // Countdown interval
 var zoom = 1.0; // Zoom level of the screen
@@ -57,8 +63,6 @@ var canShoot = true; // Whether the player can shoot a bullet
 var bulletsLeft = 8; // Number of bullets left
 
 var goodThingsLeft = NUM_GOOD_THINGS;
-
-var monsterCanShoot = true; // Whether the monster can shoot a bullet
 
 
 // Helper function for checking intersection between two rectangles
@@ -198,6 +202,12 @@ function createGoodThing() {
   document.getElementById("goodthings").appendChild(node);
 }
 
+// Create exit
+function createExit() {
+  node = document.getElementById("exit");
+  node.setAttribute("transform", "translate(" + EXIT_POSITION.x + "," + EXIT_POSITION.y + ")");
+}
+
 // Executed after the page is loaded
 function load(playerName) {
   // Attach keyboard events
@@ -206,6 +216,8 @@ function load(playerName) {
 
   // Create the player
   player = new Player(playerName);
+
+  createExit();
 
   // Create the monsters
   for (i = 0; i < NUM_MONSTERS; i++) {
@@ -350,9 +362,7 @@ function moveMonsters() {
     node.setAttribute("transform", "translate(" + t + ", 0) scale(" + s + ", 1) translate(-" + t + ", 0)");
 
     if (node.shootable) {
-      if (monsterCanShoot) {
-        monsterShootsBullet(node);
-      }
+      monsterShootsBullet(node);
     }
   }
 }
@@ -443,6 +453,11 @@ function keyup(evt) {
   }
 }
 
+// When player completes the level
+function completesLevel() {
+  die();
+}
+
 // Collision checking
 function collisionDetection() {
   // Check whether the player collides with a monster
@@ -502,6 +517,13 @@ function collisionDetection() {
     if (intersect(new Point(x, y), BULLET_SIZE, player.position, PLAYER_SIZE)) {
       bullets.removeChild(bullet);
       i--;
+      die();
+    }
+  }
+
+  // Check whether the player hits the exit
+  if (intersect(EXIT_POSITION, EXIT_SIZE, player.position, PLAYER_SIZE)) {
+    if (goodThingsLeft == 0) {
       die();
     }
   }
