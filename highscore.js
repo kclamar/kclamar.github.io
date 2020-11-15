@@ -1,173 +1,105 @@
-//
-// A score record JavaScript class to store the name and the score of a player
-//
+// highscore.js, adapted from lab 6
+
+NUM_RECORDS = 5;
+
+// Class storing name and score
 function ScoreRecord(name, score) {
-    this.name = name;
-    this.score = score;
+  this.name = name;
+  this.score = score;
 }
 
+// Read high score table from cookies
+function readHighScoreTable() {
+  var table = [];
 
-//
-// This function reads the high score table from the cookies
-//
-function getHighScoreTable() {
-    var table = new Array();
+  for (var i = 0; i < NUM_RECORDS; ++i) {
+    // Get cookie using cookie name
+    var recordString = readCookie("player" + i);
 
-    for (var i = 0; i < 10; i++) {
-        // Contruct the cookie name
-        var name = "player" + i;
+    // Break loop if cookie doesn't exist
+    if (recordString == null)
+      break;
 
-        // Get the cookie value using the cookie name
-        var value = getCookie(name);
+    // Extract name and score
+    var nameScore = recordString.split("~");
 
-        // If the cookie does not exist exit from the for loop
-        if (value == null)
-            break;
+    // Append score record to high score table
+    table.push(new ScoreRecord(nameScore[0], parseInt(nameScore[1])));
+  }
 
-        // Extract the name and score of the player from the cookie value
-        var record = value.split("~");
-
-        // Add a new score record at the end of the array
-        table.push(new ScoreRecord(record[0], parseInt(record[1])));
-    }
-
-    return table;
+  return table;
 }
 
-
-//
-// This function stores the high score table to the cookies
-//
-function setHighScoreTable(table) {
-    for (var i = 0; i < 5; i++) {
-        // If i is more than the length of the high score table exit
-        // from the for loop
-        if (i >= table.length) break;
-
-        // Contruct the cookie name
-        var name = "player" + i;
-
-        // Store the ith record as a cookie using the cookie name
-        setCookie(name, table[i].name + "~" + table[i].score);
-    }
+// Write high score table to cookies
+function writeHighScoreTable(table) {
+  for (var i = 0; (i < NUM_RECORDS) && (i < table.length); ++i)
+    writeCookie("player" + i, table[i].name + "~" + table[i].score);
 }
 
-//
-// Clear the high score table, delete all the cookies
-//
-function clearHighScoreTable() {
-    var highScoreTable = getHighScoreTable();
-    for (var i = 0; i < highScoreTable.length; i++) {
-        var name = "player" + i;
-        deleteCookie(name);
-    }
+// Add high score record to the text node
+function appendHighScoreRecord(record, node, highlight) {
+  // Create text spans
+  var name = document.createElementNS("http://www.w3.org/2000/svg", "tspan");
+  var score = document.createElementNS("http://www.w3.org/2000/svg", "tspan");
+
+  // Set attributes
+  name.setAttribute("x", 100);
+  name.setAttribute("dy", 40);
+  score.setAttribute("x", 400);
+
+  // Highlight current player's record
+  if (highlight) {
+    name.style.setProperty("fill", "red");
+    score.style.setProperty("fill", "red");
+  }
+
+  name.appendChild(document.createTextNode(record.name));
+  score.appendChild(document.createTextNode(record.score));
+  node.appendChild(name);
+  node.appendChild(score);
 }
 
+// Display high score table
+function displayHighScoreTable(table, highlight = -1) {
+  // Make table visible
+  var node = document.getElementById("highscoretable");
+  node.style.setProperty("visibility", "visible", null);
 
-//
-// This function adds a high score entry to the text node
-//
-function addHighScore(record, node, highlight) {
-    // Create the name text span
-    var name = document.createElementNS("http://www.w3.org/2000/svg", "tspan");
+  // Clear text content of high score table
+  var node = document.getElementById("highscoretext");
+  node.textContent = null;
 
-    // Set the attributes and create the text
-    name.setAttribute("x", 100);
-    name.setAttribute("dy", 40);
-
-    if (highlight) {
-      name.style.setProperty("fill", "red");
-    }
-
-    name.appendChild(document.createTextNode(record.name));
-
-    // Add the name to the text node
-    node.appendChild(name);
-
-    // Create the score text span
-    var score = document.createElementNS("http://www.w3.org/2000/svg", "tspan");
-
-    // Set the attributes and create the text
-    score.setAttribute("x", 400);
-
-    if (highlight) {
-      score.style.setProperty("fill", "red");
-    }
-
-    score.appendChild(document.createTextNode(record.score));
-
-    // Add the name to the text node
-    node.appendChild(score);
+  for (var i = 0; (i < NUM_RECORDS) && (i < table.length); ++i)
+    appendHighScoreRecord(table[i], node, i == highlight);
 }
 
+// Read cookie
+function readCookie(name) {
+  var cookie = document.cookie;
+  var prefix = name + "=";
+  var begin = cookie.indexOf("; " + prefix);
 
-//
-// This function shows the high score table to SVG
-//
-function showHighScoreTable(table, highlight = -1) {
-    // Show the table
-    var node = document.getElementById("highscoretable");
-    node.style.setProperty("visibility", "visible", null);
+  if (begin == -1) {
+    begin = cookie.indexOf(prefix);
+    if (begin != 0)
+      return null;
+  } else
+    begin += 2;
 
-    // Get the high score text node
-    var node = document.getElementById("highscoretext");
-    node.textContent = null;
+  var end = document.cookie.indexOf(";", begin);
 
-    for (var i = 0; i < 5; i++) {
-        // If i is more than the length of the high score table exit
-        // from the for loop
-        if (i >= table.length) break;
+  if (end == -1)
+    end = cookie.length;
 
-        // Add the record at the end of the text node
-        addHighScore(table[i], node, i == highlight);
-    }
+  return unescape(cookie.substring(begin + prefix.length, end));
 }
 
-
-//
-// The following functions are used to handle HTML cookies
-//
-
-//
-// Set a cookie
-//
-function setCookie(name, value, expires, path, domain, secure) {
-    var curCookie = name + "=" + escape(value) +
-        ((expires) ? "; expires=" + expires.toGMTString() : "") +
-        ((path) ? "; path=" + path : "") +
-        ((domain) ? "; domain=" + domain : "") +
-        ((secure) ? "; secure" : "");
-    document.cookie = curCookie;
-}
-
-
-//
-// Get a cookie
-//
-function getCookie(name) {
-    var dc = document.cookie;
-    var prefix = name + "=";
-    var begin = dc.indexOf("; " + prefix);
-    if (begin == -1) {
-        begin = dc.indexOf(prefix);
-        if (begin != 0) return null;
-    } else
-        begin += 2;
-    var end = document.cookie.indexOf(";", begin);
-    if (end == -1)
-        end = dc.length;
-    return unescape(dc.substring(begin + prefix.length, end));
-}
-
-
-//
-// Delete a cookie
-//
-function deleteCookie(name, path, domain) {
-    if (getCookie(name)) {
-        document.cookie = name + "=" +
-        ((path) ? "; path=" + path : "") +
-        ((domain) ? "; domain=" + domain : "") +
-        "; expires=Thu, 01-Jan-70 00:00:01 GMT";
-    }
+// Write cookie
+function writeCookie(name, value, expires, path, domain, secure) {
+  var cookie = name + "=" + escape(value) +
+    ((expires) ? "; expires=" + expires.toGMTString() : "") +
+    ((path) ? "; path=" + path : "") +
+    ((domain) ? "; domain=" + domain : "") +
+    ((secure) ? "; secure" : "");
+  document.cookie = cookie;
 }

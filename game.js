@@ -1,27 +1,27 @@
 // Classes for point and size
 function Point(x, y) {
-  this.x = (x) ? parseFloat(x) : 0.0;
-  this.y = (y) ? parseFloat(y) : 0.0;
+  this.x = (x) ? parseFloat(x) : 0.;
+  this.y = (y) ? parseFloat(y) : 0.;
 }
 
 function Size(w, h) {
-  this.w = (w) ? parseFloat(w) : 0.0;
-  this.h = (h) ? parseFloat(h) : 0.0;
+  this.w = (w) ? parseFloat(w) : 0.;
+  this.h = (h) ? parseFloat(h) : 0.;
 }
 
 
-// Enum types
+// Motion enum
 var motionType = {
   NONE: 0,
   LEFT: 1,
   RIGHT: 2
-}; // Motion enum
+};
 
+// Facing direction enum
 var facingType = {
   LEFT: 0,
   RIGHT: 1
 };
-
 
 // Constants
 var SCORE_LEVEL = 100;
@@ -29,110 +29,118 @@ var SCORE_TIME = 2;
 var SCORE_MONSTER = 10;
 var SCORE_GOOD_THING = 15;
 
-var TIME_LIMIT = 60;
-var GAME_INTERVAL = 25; // Time interval of running the game
+var TIME_LIMIT = 60; // Time limit in seconds
+var GAME_INTERVAL = 25; // Time interval of running the game in milliseconds
+
 var SCREEN_SIZE = new Size(600, 560); // Size of the game screen
 
 var PLAYER_SIZE = new Size(40, 40); // Size of the player
 var PLAYER_INIT_POS = new Point(0, 0); // Initial position of the player
-var MOVE_DISPLACEMENT = 5; // Speed of the player in motion
-var JUMP_SPEED = 15; // Speed of the player jumping
-var VERTICAL_DISPLACEMENT = 1; // Displacement of vertical speed
-var SHOOT_INTERVAL = 200.0; // The period when shooting is disabled
+var PLAYER_X_SPEED = 5; // Horizontal speed of the player
+var PLAYER_JUMP_SPEED = 15; // Jumping speed of the player
+var PLAYER_Y_ACCELERATION = 1; // Vertical acceleration of the player
+var PLAYER_SHOOT_INTERVAL = 200.0; // Refractory period after shooting
 
-var INIT_NUM_MONSTERS = 6; // Number of monsters
-var NUM_MONSTER_INCREMENT = 4;
+var NUM_MONSTERS_INIT = 6; // Number of monsters
+var NUM_MONSTERS_INCREMENT = 4; // Increase in monsters after each level
 var MONSTER_SIZE = new Size(40, 40); // Size of a monster
 var MONSTER_SPEED = 1.0; // Speed of monsters
 var MONSTER_DISTANCE = 120; // Minimum initial distance of monsters from the player
 
+var NUM_BULLETS = 8; // Number of bullets
 var BULLET_SIZE = new Size(10, 10); // Size of a bullet
 var BULLET_SPEED = 10.0; // Speed of a bullet
-var NUM_BULLETS = 8; // Number of bullets
 
 var NUM_GOOD_THINGS = 8; // Number of good things
 var GOOD_THING_SIZE = new Size(40, 40); // Size of the good things
 
-var EXIT_SIZE = new Size(40, 40);
-var EXIT_POSITION = new Point(520, 500);
+var EXIT_SIZE = new Size(40, 40); // Size of exit
+var EXIT_POSITION = new Point(520, 500); // Position of exit
 
-var PORTAL1_SIZE = new Size(40, 40);
-var PORTAL2_SIZE = new Size(40, 40);
-var PORTAL1_POSITION = new Point(180, 120);
-var PORTAL2_POSITION = new Point(0, 440);
+var PORTAL1_SIZE = new Size(40, 40); // Size of portal 1
+var PORTAL2_SIZE = new Size(40, 40); // Size of portal 2
+var PORTAL1_POSITION = new Point(180, 120); // Position of portal 1
+var PORTAL2_POSITION = new Point(0, 440); // Position of portal 2
+var PORTAL1_DESTINATION = new Point(40, 440); // Destination of portal 1
+var PORTAL2_DESTINATION = new Point(140, 120); // Destination of portal 2
 
-var PORTAL2_DESTINATION = new Point(140, 120);
-var PORTAL1_DESTINATION = new Point(40, 440);
+var VERTICAL_PLATFORM_TOP = 100; // Top position of vertical platform
+var VERTICAL_PLATFORM_BOTTOM = 300; // Bottom position of vertical platform
+var VERTICAL_PLATFORM_INIT_Y = 100; // Initial position of vertical platform
 
-var SOUND_BACKGROUND = "sounds/background.mp3";
-var SOUND_PLAYER_DIES = "sounds/death.mp3";
-var SOUND_MONSTER_DIES = "sounds/death.ogg";
-var SOUND_SHOOT = "sounds/shoot.ogg";
-var SOUND_LEVEL_UP = "sounds/levelup.ogg";
-var VERTICAL_PLATFORM_TOP = 100;
-var VERTICAL_PLATFORM_BOTTOM = 300;
-var VERTICAL_PLATFORM_INIT_Y = 100;
+var SOUND_BACKGROUND = "sounds/background.mp3"; // Background music
+var SOUND_PLAYER_DIES = "sounds/death.mp3"; // Sound of player dying
+var SOUND_MONSTER_DIES = "sounds/death.ogg"; // Sound of monster dying
+var SOUND_SHOOT = "sounds/shoot.ogg"; // Sound of player shooting
+var SOUND_LEVEL_UP = "sounds/levelup.ogg"; // Sound of completing a level
 
-
-// Variablesd
+// Variables
 var cheatMode = false;
-var currentLevel = 0;
-var score = 0;
-
+var currentLevel = 0; // Current level
+var score = 0; // Score
 var gameInterval = null; // Game interval
 var countDownInterval = null; // Countdown interval
 var zoom = 1.0; // Zoom level of the screen
 var timeLeft = TIME_LIMIT; // Amount of time left in seconds
 
 var player = null; // Player object
-var playerName = "";
-var canShoot = true; // Whether the player can shoot a bullet
-var bulletsLeft = NUM_BULLETS; // Number of bullets left
-var isOnDisappearingPlatform = [false, false, false];
-var disappearingTimeout = [null, null, null];
-var hasDisappearingPlatform = [true, true, true];
-var removedChildren = [null, null, null];
-var disappearingPlatformParents = null;
+var playerName = ""; // Name of player
+var bulletsLeft = NUM_BULLETS;
 
-var numMonsters = INIT_NUM_MONSTERS;
-var goodThingsLeft = NUM_GOOD_THINGS;
+var numMonsters = NUM_MONSTERS_INIT; // Number of monsters in the level
+var goodThingsLeft = NUM_GOOD_THINGS; // Number of uncollected good things
 
+var isOnDisappearingPlatform = [false, false, false]; // Whether the player is on the disappearing platform
+var disappearingTimeout = [null, null, null]; // Timeout for each disappearing platform
+var hasDisappearingPlatform = [true, true, true]; // Whete=her the disappearing platform exists
+var removedDisappearingPlatforms = [null, null, null]; // Removed disappearing playform nodes
+var disappearingPlatformParents = null; // Parent nodes of the disappearing platforms
+
+var playerDiesSound = new Audio(SOUND_PLAYER_DIES);
 var backgroundSound = new Audio(SOUND_BACKGROUND);
 backgroundSound.loop = true;
 backgroundSound.volume = .2;
-var playerDiesSound = new Audio(SOUND_PLAYER_DIES);
 
 
+// Play sound from source
 function playSound(src) {
   (new Audio(src)).play();
 }
 
-// Helper function for checking intersection between two rectangles
+// Check intersection between two rectangles
 function intersect(pos1, size1, pos2, size2) {
   return (pos1.x < pos2.x + size2.w && pos1.x + size1.w > pos2.x &&
     pos1.y < pos2.y + size2.h && pos1.y + size1.h > pos2.y);
 }
 
 // Generates random integer from vmin to vmax - 1
-function rng(vmin, vmax) {
+function randomInteger(vmin, vmax) {
   return vmin + Math.floor((vmax - vmin) * Math.random());
 }
 
 // Player class
-function Player(name) {
+function Player() {
   this.node = document.getElementById("player");
-  this.node_no_name = document.getElementById("playerwithoutname");
+  this.bodyNode = document.getElementById("playerbody");
   this.position = PLAYER_INIT_POS;
   this.motion = motionType.NONE;
   this.verticalSpeed = 0;
   this.facing = facingType.RIGHT;
-  this.name = (name == "") ? "Anonymous" : name;
-  document.getElementById("nametag").textContent = this.name;
+  this.alive = true;
+  this.readyToShoot = true;
+  updateBulletsNumber();
+  document.getElementById("nametag").textContent = playerName;
 }
 
+// Check whether player can shoot
+Player.prototype.canShoot = function() {
+  return (this.alive && this.readyToShoot && ((bulletsLeft > 0) || cheatMode));
+}
+
+// Check whether player is on disappearing platform
+// Adapted from lab 4
 Player.prototype.isOnDisappearingPlatform = function(i) {
   var node = document.getElementById("disappearingplatform" + i);
-
   var x = parseFloat(node.getAttribute("x"));
   var y = parseFloat(node.getAttribute("y"));
   var w = parseFloat(node.getAttribute("width"));
@@ -141,44 +149,52 @@ Player.prototype.isOnDisappearingPlatform = function(i) {
   if (((this.position.x + PLAYER_SIZE.w > x && this.position.x < x + w) ||
       ((this.position.x + PLAYER_SIZE.w) == x && this.motion == motionType.RIGHT) ||
       (this.position.x == (x + w) && this.motion == motionType.LEFT)) &&
-      (this.position.y + PLAYER_SIZE.h == y)) return true;
+    (this.position.y + PLAYER_SIZE.h == y)) {
+    return true;
+  }
 
-  if (this.position.y + PLAYER_SIZE.h == SCREEN_SIZE.h) return true;
+  if (this.position.y + PLAYER_SIZE.h == SCREEN_SIZE.h) {
+    return true;
+  }
 
   return false;
 }
 
+// Check whether player is on vertical platform
 Player.prototype.isOnVerticalPlatform = function() {
   var node = document.getElementById("verticalplatform");
   var onTopOfVerticalPlatForm = false;
-
   var x = parseFloat(node.getAttribute("x"));
   var y = parseFloat(node.getAttribute("y"));
   var w = parseFloat(node.getAttribute("width"));
   var h = parseFloat(node.getAttribute("height"));
 
   diff = this.position.y + PLAYER_SIZE.h - y;
-  if ((diff >= -3) && (diff <= 1)) {
-    onTopOfVerticalPlatForm = true;
-  }
 
   if (((this.position.x + PLAYER_SIZE.w > x && this.position.x < x + w) ||
       ((this.position.x + PLAYER_SIZE.w) == x && this.motion == motionType.RIGHT) ||
       (this.position.x == (x + w) && this.motion == motionType.LEFT)) &&
-    ((this.position.y + PLAYER_SIZE.h == y) || onTopOfVerticalPlatForm)) return true;
+    ((this.position.y + PLAYER_SIZE.h == y) || ((diff >= -3) && (diff <= 1)))) {
+    return true;
+  }
 
-  if (this.position.y + PLAYER_SIZE.h == SCREEN_SIZE.h) return true;
+  if (this.position.y + PLAYER_SIZE.h == SCREEN_SIZE.h) {
+    return true;
+  }
 
   return false;
 }
 
+// Check whether player is on any platform
 Player.prototype.isOnPlatform = function() {
   var platforms = document.getElementById("platforms");
-  for (var i = 0; i < platforms.childNodes.length; i++) {
+  for (var i = 0; i < platforms.childNodes.length; ++i) {
     var node = platforms.childNodes.item(i);
     var onTopOfVerticalPlatForm = false;
 
-    if (node.nodeName != "rect") continue;
+    if (node.nodeName != "rect") {
+      continue;
+    }
 
     var x = parseFloat(node.getAttribute("x"));
     var y = parseFloat(node.getAttribute("y"));
@@ -195,19 +211,29 @@ Player.prototype.isOnPlatform = function() {
     if (((this.position.x + PLAYER_SIZE.w > x && this.position.x < x + w) ||
         ((this.position.x + PLAYER_SIZE.w) == x && this.motion == motionType.RIGHT) ||
         (this.position.x == (x + w) && this.motion == motionType.LEFT)) &&
-      ((this.position.y + PLAYER_SIZE.h == y) || onTopOfVerticalPlatForm)) return true;
+      ((this.position.y + PLAYER_SIZE.h == y) || onTopOfVerticalPlatForm)) {
+      return true;
+    }
   }
 
-  if (this.position.y + PLAYER_SIZE.h == SCREEN_SIZE.h) return true;
+  if (this.position.y + PLAYER_SIZE.h == SCREEN_SIZE.h) {
+    return true;
+  }
 
   return false;
 }
 
+// Check whether player collides with platform
+// Adapted from lab 5
 Player.prototype.collidePlatform = function(position) {
   var platforms = document.getElementById("platforms");
-  for (var i = 0; i < platforms.childNodes.length; i++) {
+
+  for (var i = 0; i < platforms.childNodes.length; ++i) {
     var node = platforms.childNodes.item(i);
-    if (node.nodeName != "rect") continue;
+
+    if (node.nodeName != "rect") {
+      continue;
+    }
 
     var x = parseFloat(node.getAttribute("x"));
     var y = parseFloat(node.getAttribute("y"));
@@ -221,74 +247,97 @@ Player.prototype.collidePlatform = function(position) {
         position.x = this.position.x;
       }
       if (intersect(position, PLAYER_SIZE, pos, size)) {
-        if (this.position.y >= y + h)
+        if (this.position.y >= y + h) {
           position.y = y + h;
-        else
+        } else {
           position.y = y - PLAYER_SIZE.h;
+        }
         this.verticalSpeed = 0;
       }
     }
   }
 }
 
+// Check whether player collides with screen
+// Adapted from lab 5
 Player.prototype.collideScreen = function(position) {
-  if (position.x < 0) position.x = 0;
-  if (position.x + PLAYER_SIZE.w > SCREEN_SIZE.w) position.x = SCREEN_SIZE.w - PLAYER_SIZE.w;
+  if (position.x < 0) {
+    position.x = 0;
+  }
+
+  if (position.x + PLAYER_SIZE.w > SCREEN_SIZE.w) {
+    position.x = SCREEN_SIZE.w - PLAYER_SIZE.w;
+  }
+
   if (position.y < 0) {
     position.y = 0;
     this.verticalSpeed = 0;
   }
+
   if (position.y + PLAYER_SIZE.h > SCREEN_SIZE.h) {
     position.y = SCREEN_SIZE.h - PLAYER_SIZE.h;
     this.verticalSpeed = 0;
   }
 }
 
-function collidePlatform(position) {
+function collides(node, pos, size) {
+  var x = parseFloat(node.getAttribute("x"));
+  var y = parseFloat(node.getAttribute("y"));
+  var w = parseFloat(node.getAttribute("width"));
+  var h = parseFloat(node.getAttribute("height"));
+
+  return intersect(pos, size, new Point(x, y), new Size(w, h));
+}
+
+// Check whether good thing collides with things
+function goodThingCollides(position) {
   var platforms = document.getElementById("platforms");
+
   for (var i = 0; i < platforms.childNodes.length; ++i) {
     var node = platforms.childNodes.item(i);
-    if (node.nodeName != "rect") continue;
 
-    var x = parseFloat(node.getAttribute("x"));
-    var y = parseFloat(node.getAttribute("y"));
-    var w = parseFloat(node.getAttribute("width"));
-    var h = parseFloat(node.getAttribute("height"));
-    var pos = new Point(x, y);
-    var size = new Size(w, h);
+    if (node.nodeName != "rect")
+      continue;
 
-    if (intersect(position, GOOD_THING_SIZE, pos, size)) {
+    if (collides(node, position, GOOD_THING_SIZE))
       return true;
-    }
   }
 
   var goodThings = document.getElementById("goodthings");
 
-  for (var i = 0; i < goodThings.childNodes.length; i++) {
+  for (var i = 0; i < goodThings.childNodes.length; ++i) {
     var goodThing = goodThings.childNodes.item(i);
     var x = parseInt(goodThing.getAttribute("x"));
     var y = parseInt(goodThing.getAttribute("y"));
 
-    if (intersect(position, GOOD_THING_SIZE, new Point(x, y), GOOD_THING_SIZE)) {
+    if (intersect(position, GOOD_THING_SIZE, new Point(x, y), GOOD_THING_SIZE))
       return true;
-    }
   }
 
-  if (intersect(position, GOOD_THING_SIZE, player.position, PLAYER_SIZE)) {
+  if (intersect(position, GOOD_THING_SIZE, player.position, PLAYER_SIZE))
     return true;
-  }
+
+  if (intersect(position, GOOD_THING_SIZE, EXIT_POSITION, EXIT_SIZE))
+    return true;
+
+  if (intersect(position, GOOD_THING_SIZE, PORTAL1_POSITION, PORTAL1_SIZE))
+    return true;
+
+  if (intersect(position, GOOD_THING_SIZE, PORTAL2_POSITION, PORTAL2_SIZE))
+    return true;
 
   return false;
 }
 
+// Create good thing
 function createGoodThing() {
   var pos = new Point(0, 0);
 
   do {
-    pos.x = Math.floor(rng(0, SCREEN_SIZE.w - GOOD_THING_SIZE.w - 40));
-    pos.y = Math.floor(rng(0, SCREEN_SIZE.h - GOOD_THING_SIZE.h - 40));
+    pos.x = Math.floor(randomInteger(0, SCREEN_SIZE.w - GOOD_THING_SIZE.w - 40));
+    pos.y = Math.floor(randomInteger(0, SCREEN_SIZE.h - GOOD_THING_SIZE.h - 40));
   }
-  while (collidePlatform(pos));
+  while (goodThingCollides(pos));
 
   node = document.createElementNS("http://www.w3.org/2000/svg", "use");
   node.setAttribute("x", pos.x);
@@ -297,11 +346,11 @@ function createGoodThing() {
   document.getElementById("goodthings").appendChild(node);
 }
 
+// Create monster
 function createMonster(shootable) {
-  var startx = Math.floor(rng(0, SCREEN_SIZE.w - MONSTER_SIZE.w));
-  var starty = Math.floor(rng(MONSTER_DISTANCE, SCREEN_SIZE.h - MONSTER_SIZE.h));
-  var endx = Math.floor(rng(MONSTER_DISTANCE, SCREEN_SIZE.w - MONSTER_SIZE.w));
-
+  var startx = Math.floor(randomInteger(0, SCREEN_SIZE.w - MONSTER_SIZE.w));
+  var starty = Math.floor(randomInteger(MONSTER_DISTANCE, SCREEN_SIZE.h - MONSTER_SIZE.h));
+  var endx = Math.floor(randomInteger(MONSTER_DISTANCE, SCREEN_SIZE.w - MONSTER_SIZE.w));
   var monster = document.createElementNS("http://www.w3.org/2000/svg", "use");
   monster.shootable = shootable;
   monster.setAttribute("initx", startx);
@@ -313,12 +362,7 @@ function createMonster(shootable) {
   document.getElementById("monsters").appendChild(monster);
 }
 
-// Create exit
-function createExit() {
-  node = document.getElementById("exit");
-  node.setAttribute("transform", "translate(" + EXIT_POSITION.x + "," + EXIT_POSITION.y + ")");
-}
-
+// Create portal
 function createPortals() {
   portal1 = document.getElementById("portal1");
   portal1.setAttribute("transform", "translate(" + PORTAL1_POSITION.x + "," + PORTAL1_POSITION.y + ")");
@@ -326,19 +370,17 @@ function createPortals() {
   portal2.setAttribute("transform", "translate(" + PORTAL2_POSITION.x + "," + PORTAL2_POSITION.y + ")");
 }
 
-function createVerticalPlatform() {
-  var node = document.getElementById("verticalplatform");
-  node.setAttribute("direction", 1);
-}
-
+// Remove object with fading animation
 function fadingRemove(thing, s, i) {
-    thing.style.transition = "opacity "+ s +"s ease";
-    thing.style.opacity = 0;
-    setTimeout(function() {
-      removedChildren[i] = thing.parentNode.removeChild(thing);
-    }, s * 1000);
+  thing.style.transition = "opacity " + s + "s ease";
+  thing.style.opacity = 0;
+
+  setTimeout(function() {
+    removedDisappearingPlatforms[i] = thing.parentNode.removeChild(thing);
+  }, s * 1000);
 }
 
+// Remove ith disappearing platform
 function removeDisappearingPlatform(i) {
   hasDisappearingPlatform[i] = false;
   fadingRemove(document.getElementById('disappearingplatform' + i), 1, i);
@@ -347,14 +389,14 @@ function removeDisappearingPlatform(i) {
 // Shoots a bullet from the player
 function shootBullet() {
   if (!cheatMode) {
-    bulletsLeft--;
+    --bulletsLeft;
   }
 
   updateBulletsNumber();
 
   // Disable shooting for a short period of time
-  canShoot = false;
-  setTimeout("canShoot = true", SHOOT_INTERVAL);
+  player.readyToShoot = false;
+  setTimeout("player.readyToShoot = true", PLAYER_SHOOT_INTERVAL);
 
   // Create the bullet using the use node
   var bullet = document.createElementNS("http://www.w3.org/2000/svg", "use");
@@ -397,6 +439,7 @@ function monsterShootsBullet(monster) {
 }
 
 // Moves player
+// Adapted from lab 4
 function movePlayer() {
   // Check whether the player is on a platform
   var isOnPlatform = player.isOnPlatform();
@@ -405,23 +448,26 @@ function movePlayer() {
   var displacement = new Point();
 
   // Move left or right
-  if (player.motion == motionType.LEFT)
-    displacement.x = -MOVE_DISPLACEMENT;
-  if (player.motion == motionType.RIGHT)
-    displacement.x = MOVE_DISPLACEMENT;
+  if (player.motion == motionType.LEFT) {
+    displacement.x = -PLAYER_X_SPEED;
+  }
+  if (player.motion == motionType.RIGHT) {
+    displacement.x = PLAYER_X_SPEED;
+  }
 
   // Fall
   if (!isOnPlatform && player.verticalSpeed <= 0) {
     displacement.y = -player.verticalSpeed;
-    player.verticalSpeed -= VERTICAL_DISPLACEMENT;
+    player.verticalSpeed -= PLAYER_Y_ACCELERATION;
   }
 
   // Jump
   if (player.verticalSpeed > 0) {
     displacement.y = -player.verticalSpeed;
-    player.verticalSpeed -= VERTICAL_DISPLACEMENT;
-    if (player.verticalSpeed <= 0)
+    player.verticalSpeed -= PLAYER_Y_ACCELERATION;
+    if (player.verticalSpeed <= 0) {
       player.verticalSpeed = 0;
+    }
   }
 
   // Get the new position of the player
@@ -441,10 +487,9 @@ function movePlayer() {
       if (player.isOnDisappearingPlatform(i)) {
         if (!isOnDisappearingPlatform[i]) {
           isOnDisappearingPlatform[i] = true;
-          disappearingTimeout[i] = setTimeout("removeDisappearingPlatform(" + i+ ")", 500);
+          disappearingTimeout[i] = setTimeout("removeDisappearingPlatform(" + i + ")", 500);
         }
-      }
-      else {
+      } else {
         if (isOnDisappearingPlatform[i]) {
           isOnDisappearingPlatform[i] = false;
           if (disappearingTimeout[i] != null) {
@@ -456,14 +501,14 @@ function movePlayer() {
   }
 }
 
+// Move vertical platform
 function moveVerticalPlatform() {
   var node = document.getElementById("verticalplatform");
   var y = parseInt(node.getAttribute("y"));
 
   if (y <= VERTICAL_PLATFORM_TOP) {
     node.setAttribute("direction", 1);
-  }
-  else if (y >= VERTICAL_PLATFORM_BOTTOM) {
+  } else if (y >= VERTICAL_PLATFORM_BOTTOM) {
     node.setAttribute("direction", -1);
   }
 
@@ -475,11 +520,11 @@ function moveVerticalPlatform() {
   }
 }
 
-// Moves monsyers
+// Move monsters
 function moveMonsters() {
-  // Go through all bullets
   var monsters = document.getElementById("monsters");
-  for (var i = 0; i < monsters.childNodes.length; i++) {
+
+  for (var i = 0; i < monsters.childNodes.length; ++i) {
     var node = monsters.childNodes.item(i);
     var initx = parseInt(node.getAttribute("initx"));
     var endx = parseInt(node.getAttribute("endx"));
@@ -505,45 +550,41 @@ function moveMonsters() {
   }
 }
 
-// Updates positions of the bullets
+// Update positions of the bullets
+// Adapted from lab 5
 function moveBullets() {
-  // Go through all bullets
   var bullets = document.getElementById("bullets");
-  for (var i = 0; i < bullets.childNodes.length; i++) {
+  for (var i = 0; i < bullets.childNodes.length; ++i) {
     var node = bullets.childNodes.item(i);
 
-    // Update the position of the bullet
     var x = parseInt(node.getAttribute("x"));
     var velocity = (node.getAttribute("direction") == facingType.RIGHT) ? BULLET_SPEED : -BULLET_SPEED;
 
     node.setAttribute("x", x + velocity);
 
-    // If the bullet is not inside the screen delete it from the group
     if ((x > SCREEN_SIZE.w) || (x < 0)) {
       if (bullets.contains(node)) {
         bullets.removeChild(node);
-        i--;
+        --i;
       }
     }
   }
 }
 
+// Update position of monster bullets
 function moveMonsterBullets() {
-  // Go through all bullets
-  var bullets = document.getElementById("monsterbullets");
-  for (var i = 0; i < bullets.childNodes.length; i++) {
-    var node = bullets.childNodes.item(i);
+  var monsterbullets = document.getElementById("monsterbullets");
 
-    // Update the position of the bullet
+  for (var i = 0; i < monsterbullets.childNodes.length; ++i) {
+    var node = monsterbullets.childNodes.item(i);
     var x = parseInt(node.getAttribute("x"));
     var velocity = (node.getAttribute("direction") == facingType.RIGHT) ? BULLET_SPEED : -BULLET_SPEED;
 
     node.setAttribute("x", x + velocity);
 
-    // If the bullet is not inside the screen delete it from the group
     if ((x > SCREEN_SIZE.w) || (x < 0)) {
-      bullets.removeChild(node);
-      i--;
+      monsterbullets.removeChild(node);
+      --i;
     }
   }
 }
@@ -565,12 +606,12 @@ function keydown(evt) {
 
     case "W".charCodeAt(0):
       if (player.isOnPlatform()) {
-        player.verticalSpeed = JUMP_SPEED;
+        player.verticalSpeed = PLAYER_JUMP_SPEED;
       }
       break;
 
     case "H".charCodeAt(0):
-      if (canShoot && (cheatMode || (bulletsLeft > 0))) {
+      if (player.canShoot()) {
         shootBullet();
       }
       break;
@@ -606,60 +647,60 @@ function keyup(evt) {
 // When player completes the level
 function completesLevel() {
   addScore(currentLevel * SCORE_LEVEL + timeLeft * SCORE_TIME);
-  numMonsters += NUM_MONSTER_INCREMENT;
+  numMonsters += NUM_MONSTERS_INCREMENT;
   playSound(SOUND_LEVEL_UP);
-  load(playerName);
+  load();
 }
 
 // Collision checking
 function collisionDetection() {
   // Check whether the player collides with a monster
   var monsters = document.getElementById("monsters");
-  for (var i = 0; i < monsters.childNodes.length; i++) {
+
+  for (var i = 0; i < monsters.childNodes.length; ++i) {
     var monster = monsters.childNodes.item(i);
     var x = parseInt(monster.getAttribute("x"));
     var y = parseInt(monster.getAttribute("y"));
 
-    if (intersect(new Point(x, y), MONSTER_SIZE, player.position, PLAYER_SIZE)) {
-      if (!cheatMode) {
-        die();
-      }
+    if (intersect(new Point(x, y), MONSTER_SIZE, player.position, PLAYER_SIZE) && (!cheatMode)) {
+      die();
     }
   }
 
   var goodThings = document.getElementById("goodthings");
 
-  for (var i = 0; i < goodThings.childNodes.length; i++) {
+  for (var i = 0; i < goodThings.childNodes.length; ++i) {
     var goodThing = goodThings.childNodes.item(i);
     var x = parseInt(goodThing.getAttribute("x"));
     var y = parseInt(goodThing.getAttribute("y"));
 
     if (intersect(player.position, PLAYER_SIZE, new Point(x, y), GOOD_THING_SIZE)) {
       goodThings.removeChild(goodThing);
-      i--;
-      goodThingsLeft--;
+      --i;
+      --goodThingsLeft;
       addScore(SCORE_GOOD_THING);
     }
   }
 
   // Check whether a bullet hits a monster
   var bullets = document.getElementById("bullets");
-  for (var i = 0; i < bullets.childNodes.length; i++) {
+
+  for (var i = 0; i < bullets.childNodes.length; ++i) {
     var bullet = bullets.childNodes.item(i);
     var x = parseInt(bullet.getAttribute("x"));
     var y = parseInt(bullet.getAttribute("y"));
 
-    for (var j = 0; j < monsters.childNodes.length; j++) {
+    for (var j = 0; j < monsters.childNodes.length; ++j) {
       var monster = monsters.childNodes.item(j);
       var mx = parseInt(monster.getAttribute("x"));
       var my = parseInt(monster.getAttribute("y"));
 
       if (intersect(new Point(x, y), BULLET_SIZE, new Point(mx, my), MONSTER_SIZE)) {
         monsters.removeChild(monster);
-        j--;
+        --j;
         if (bullets.contains(node)) {
           bullets.removeChild(node);
-          i--;
+          --i;
         }
         addScore(SCORE_MONSTER);
         playSound(SOUND_MONSTER_DIES);
@@ -669,14 +710,15 @@ function collisionDetection() {
 
   // Check whether a monster bullet hits the player
   var bullets = document.getElementById("monsterbullets");
-  for (var i = 0; i < bullets.childNodes.length; i++) {
+
+  for (var i = 0; i < bullets.childNodes.length; ++i) {
     var bullet = bullets.childNodes.item(i);
     var x = parseInt(bullet.getAttribute("x"));
     var y = parseInt(bullet.getAttribute("y"));
 
     if (intersect(new Point(x, y), BULLET_SIZE, player.position, PLAYER_SIZE)) {
       bullets.removeChild(bullet);
-      i--;
+      --i;
       if (!cheatMode) {
         die();
       }
@@ -684,84 +726,94 @@ function collisionDetection() {
   }
 
   // Check whether the player hits the exit
-  if (intersect(EXIT_POSITION, EXIT_SIZE, player.position, PLAYER_SIZE)) {
-    if (goodThingsLeft == 0) {
-      completesLevel();
-    }
+  if (intersect(EXIT_POSITION, EXIT_SIZE, player.position, PLAYER_SIZE) && (goodThingsLeft == 0)) {
+    completesLevel();
   }
 
   if (intersect(PORTAL1_POSITION, PORTAL1_SIZE, player.position, PLAYER_SIZE)) {
     player.position.x = PORTAL1_DESTINATION.x;
     player.position.y = PORTAL1_DESTINATION.y;
-  }
-  else if (intersect(PORTAL2_POSITION, PORTAL2_SIZE, player.position, PLAYER_SIZE)) {
+  } else if (intersect(PORTAL2_POSITION, PORTAL2_SIZE, player.position, PLAYER_SIZE)) {
     player.position.x = PORTAL2_DESTINATION.x;
     player.position.y = PORTAL2_DESTINATION.y;
   }
 }
 
-function addScore(amount) {
-  score += amount;
-  document.getElementById("score").textContent = score;
+function clearObjects(objectId) {
+  var objects = document.getElementById(objectId);
+
+  while (objects.firstChild) {
+    objects.firstChild.remove();
+  }
 }
 
-// Executed after the page is loaded
-function load(playerName) {
-  var monsters = document.getElementById("monsters");
-  while (monsters.firstChild) {
-      monsters.firstChild.remove();
-  }
-
-  document.getElementById("verticalplatform").setAttribute("y", VERTICAL_PLATFORM_INIT_Y);
-  if (gameInterval != null) {
-    clearInterval(gameInterval);
-  }
-
-  if (countDownInterval != null) {
-    clearInterval(countDownInterval);
-  }
-
-  startTimer();
-
-  currentLevel++;
-  document.getElementById("levelnumber").textContent = currentLevel;
-  timeLeft = TIME_LIMIT;
-  document.getElementById("time").textContent = "" + timeLeft + " sec.";
-  bulletsLeft = NUM_BULLETS;
-  updateBulletsNumber();
-  goodThingsLeft = NUM_GOOD_THINGS;
-
-  // Attach keyboard events
-  document.addEventListener("keydown", keydown, false);
-  document.addEventListener("keyup", keyup, false);
-
-  // Create the player
-  player = new Player(playerName);
+// Reset platforms
+function resetPlatforms() {
+  var verticalPlatform = document.getElementById("verticalplatform");
+  verticalPlatform.setAttribute("y", VERTICAL_PLATFORM_INIT_Y);
+  verticalPlatform.setAttribute("direction", 1);
 
   for (var i = 0; i < 3; ++i) {
-    if (removedChildren[i] != null) {
+    if (removedDisappearingPlatforms[i] != null) {
       hasDisappearingPlatform[i] = true;
-      removedChildren[i].style.opacity = 1;
-      disappearingPlatformParents[i].appendChild(removedChildren[i]);
-      removedChildren[i] = null;
+      removedDisappearingPlatforms[i].style.opacity = 1;
+      disappearingPlatformParents[i].appendChild(removedDisappearingPlatforms[i]);
+      removedDisappearingPlatforms[i] = null;
+    }
+  }
+}
+
+// Die
+function die() {
+  player.alive = false;
+  backgroundSound.pause();
+  playerDiesSound.play();
+  clearInterval(gameInterval);
+  clearInterval(countDownInterval);
+
+  var highScoreTable = readHighScoreTable();
+  var record = new ScoreRecord(playerName, score);
+  var position = 0;
+
+  while (position < highScoreTable.length) {
+    if (highScoreTable[position++].score < score) {
+      break;
     }
   }
 
-  createExit();
-  createPortals();
-  createVerticalPlatform();
-
-  // Create the monsters
-  for (i = 0; i < numMonsters; i++) {
-    createMonster(i == 0);
+  if (position < 5) {
+    highScoreTable.splice(position, 0, record);
   }
 
-  for (i = 0; i < NUM_GOOD_THINGS; i++) {
-    createGoodThing();
-  }
+  writeHighScoreTable(highScoreTable);
+  displayHighScoreTable(highScoreTable, position);
+}
 
-  // Start the game interval
-  gameInterval = setInterval("gamePlay()", GAME_INTERVAL);
+function addScore(amount) {
+  score += amount;
+  document.getElementById("scoretext").textContent = score;
+}
+
+function addLevel() {
+  document.getElementById("leveltext").textContent = ++currentLevel;
+}
+
+function updateBulletsNumber() {
+  document.getElementById("bulletstext").textContent = (cheatMode) ? "Infinite" : bulletsLeft;
+}
+
+function updateTime() {
+  document.getElementById("timetext").textContent = "" + timeLeft + " sec.";
+}
+
+function updateScreen() {
+  // Calculate the scaling and translation factors
+  var s = (player.facing == facingType.LEFT) ? "-1" : "1";
+  var t = PLAYER_SIZE.w / 2;
+
+  // Transform the player
+  player.bodyNode.setAttribute("transform", "translate(" + t + ", 0) scale(" + s + ", 1) translate(-" + t + ", 0)");
+  player.node.setAttribute("transform", "translate(" + player.position.x + "," + player.position.y + ")");
 }
 
 // Updates position and motion of the player
@@ -775,73 +827,60 @@ function gamePlay() {
   moveMonsters();
 }
 
-// This function updates the position of the player's SVG object and
-// set the appropriate translation of the game screen relative to the
-// the position of the player
-function updateScreen() {
-  // Calculate the scaling and translation factors
-  var s = (player.facing == facingType.LEFT) ? "-1" : "1";
-  var t = PLAYER_SIZE.w / 2;
-
-  // Transform the player
-  player.node_no_name.setAttribute("transform", "translate(" + t + ", 0) scale(" + s + ", 1) translate(-" + t + ", 0)");
-  player.node.setAttribute("transform", "translate(" + player.position.x + "," + player.position.y + ")");
-}
-
-// Dies
-function die() {
-  backgroundSound.pause();
-  playerDiesSound.play();
-  clearInterval(gameInterval);
-  clearInterval(countDownInterval);
-  var highScoreTable = getHighScoreTable();
-
-  // // Create the new score record
-  var record = new ScoreRecord(playerName, score);
-
-  // // Insert the new score record
-  var position = 0;
-  while (position < highScoreTable.length) {
-      var curPositionScore = highScoreTable[position].score;
-      if (curPositionScore < score)
-          break;
-
-      position++;
-  }
-
-  if (position < 5)
-      highScoreTable.splice(position, 0, record);
-
-  // Store the new high score table
-  setHighScoreTable(highScoreTable);
-
-  // Show the high score table
-  showHighScoreTable(highScoreTable, position);
-}
-
 // Counts down by 1 second
 function countDown() {
-  timeLeft -= 1;
-
-  if (timeLeft >= 0) {
-    document.getElementById("time").textContent = "" + timeLeft + " sec.";
-  } else {
+  if (--timeLeft >= 0)
+    updateTime()
+  else
     die();
-  }
 }
 
 // Starts timer
 function startTimer() {
+  if (gameInterval != null)
+    clearInterval(gameInterval);
+
+  if (countDownInterval != null)
+    clearInterval(countDownInterval);
+
+  timeLeft = TIME_LIMIT;
+  updateTime();
+
   countDownInterval = setInterval("countDown()", 1000);
+  gameInterval = setInterval("gamePlay()", GAME_INTERVAL);
 }
 
-function updateBulletsNumber() {
-  if (!cheatMode) {
-    document.getElementById("bulletsnumber").textContent = bulletsLeft;
+// Executed after the page is loaded
+function load() {
+  clearObjects("monsters");
+  clearObjects("monsterbullets");
+  clearObjects("goodthings");
+  clearObjects("bullets");
+
+  bulletsLeft = NUM_BULLETS;
+  updateBulletsNumber();
+
+  player = new Player();
+
+  addLevel();
+  goodThingsLeft = NUM_GOOD_THINGS;
+
+  resetPlatforms();
+  createPortals();
+
+  for (i = 0; i < numMonsters; ++i) {
+    createMonster(i == 0);
   }
-  else {
-    document.getElementById("bulletsnumber").textContent = "Infinite";
+
+  for (i = 0; i < NUM_GOOD_THINGS; ++i) {
+    createGoodThing();
   }
+
+  // Attach keyboard events
+  document.addEventListener("keydown", keydown, false);
+  document.addEventListener("keyup", keyup, false);
+
+  startTimer();
 }
 
 function onLoad() {
@@ -850,32 +889,24 @@ function onLoad() {
     document.getElementById("disappearingplatform1").parentNode,
     document.getElementById("disappearingplatform2").parentNode
   ];
+
+  exitNode = document.getElementById("exit");
+  exitNode.setAttribute("transform", "translate(" + EXIT_POSITION.x + "," + EXIT_POSITION.y + ")");
 }
 
 // Starts game
-function startGame(debug = false) {
+function startGame() {
   currentLevel = 0;
   score = 0;
   addScore(0);
-  numMonsters = INIT_NUM_MONSTERS;
-
-  var monsters = document.getElementById("monsters");
-  while (monsters.firstChild) {
-      monsters.firstChild.remove();
-  }
-
-  var goodThings = document.getElementById("goodthings");
-  while (goodThings.firstChild) {
-      goodThings.firstChild.remove();
-  }
+  numMonsters = NUM_MONSTERS_INIT;
 
   document.getElementById("highscoretable").style.setProperty("visibility", "hidden", null);
-  document.getElementById("time").textContent = "" + timeLeft + " sec.";
-  updateBulletsNumber();
+  document.getElementById("timetext").textContent = "" + timeLeft + " sec.";
 
-  var button = document.getElementById("button");
   var startScreen = document.getElementById("startscreen");
-  playerName = (debug) ? "Anonymous" : prompt("Enter your name:", playerName);
+
+  playerName = prompt("Enter your name:", playerName);
 
   if ((playerName == "") || (playerName == null)) {
     playerName = "Anonymous";
@@ -884,6 +915,6 @@ function startGame(debug = false) {
   backgroundSound.currentTime = 0;
   backgroundSound.play();
 
-  load(playerName);
+  load();
   startScreen.setAttribute("visibility", "hidden");
 }

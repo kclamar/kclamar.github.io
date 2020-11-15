@@ -4,7 +4,7 @@
 
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-  <title>SVG Game</title>
+  <title>The Coin Hunt</title>
   <script language="JavaScript" src="game.js"></script>
   <script language="JavaScript" src="highscore.js"></script>
   <style>
@@ -36,8 +36,30 @@
     }
 
     #gamewindow {
-      stroke: Crimson;
+      stroke: crimson;
       stroke-width: 20
+    }
+
+    #highscoretitle {
+      fill: crimson;
+      font-size: 32px;
+      font-weight: bold;
+      text-anchor: middle
+    }
+
+    #highscorearea {
+      fill: url(#startscreenpattern);
+      stroke: crimson;
+      stroke-width: 10
+    }
+
+    #highscoretext {
+      font-size: 20px;
+      font-weight: bold
+    }
+
+    #gameareabackground {
+      fill: lightcyan
     }
 
     .button {
@@ -45,11 +67,24 @@
     }
 
     .platform {
-      fill: SandyBrown
+      fill: sandybrown
     }
 
-    .disappearing {
-      fill:orangered;
+    .disappearingplatform {
+      fill: orangered;
+    }
+
+    .displayarea {
+      fill: crimson
+    }
+
+    .displaylabel {
+      fill: white;
+      font-size: small
+    }
+
+    .displaytext {
+      fill: white
     }
   </style>
 </head>
@@ -62,13 +97,13 @@
         <rect x="20" y="20" width="600" height="560" />
       </clipPath>
 
-      <pattern id="background_pattern" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse">
+      <pattern id="backgroundpattern" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse">
         <rect width="20" height="20" style="fill:Orange" />
         <rect width="10" height="10" style="fill:yellow" />
         <rect x="10" y="10" width="10" height="10" style="fill:yellow" />
       </pattern>
 
-      <pattern id="startscreen_pattern" x="0" y="0" width="40" height="40" patternUnits="userSpaceOnUse">
+      <pattern id="startscreenpattern" x="0" y="0" width="40" height="40" patternUnits="userSpaceOnUse">
         <rect width="40" height="40" style="fill:PowderBlue" />
         <rect width="20" height="20" style="fill:PaleTurquoise" />
         <rect x="20" y="20" width="20" height="20" style="fill:PaleTurquoise" />
@@ -98,25 +133,26 @@
       </g>
     </defs>
 
-    <rect width="100%" height="100%" style="fill:url(#background_pattern)" />
+    <rect width="100%" height="100%" style="fill:url(#backgroundpattern)" />
 
     <rect id="gamewindow" x="20" y="20" width="600" height="560" />
 
     <g style="clip-path:url(#gameareaclip)">
       <g transform="translate(20,20)">
         <g id="gamearea" transform="translate(0,0)" width="600" height="560">
-          <rect x="0" y="0" width="600" height="560" style="fill:LightCyan" />
+          <rect id="gameareabackground" x="0" y="0" width="600" height="560" />
           <g id="platforms">
             <!-- 60 -->
             <rect class="platform" width="60" height="20" x="0" y="60" />
 
             <!-- 80 -->
+            <rect class="platform" width="20" height="20" x="40" y="80" />
 
             <!-- 100 -->
             <rect class="platform" width="60" height="20" x="40" y="100" />
-            <rect id="disappearingplatform0" class="platform disappearing" width="80" height="20" x="100" y="100" />
+            <rect id="disappearingplatform0" class="platform disappearingplatform" width="80" height="20" x="100" y="100" />
             <rect class="platform" width="80" height="20" x="180" y="100" />
-            <rect id="disappearingplatform1" class="platform disappearing" width="80" height="20" x="260" y="100" />
+            <rect id="disappearingplatform1" class="platform disappearingplatform" width="80" height="20" x="260" y="100" />
             <rect class="platform" width="160" height="20" x="340" y="100" />
             <rect id="verticalplatform" class="platform" width="40" height="20" x="560" y="100" />
 
@@ -125,21 +161,16 @@
 
             <!-- 140 -->
             <rect class="platform" width="40" height="20" x="220" y="140" />
-            <!-- <rect class="platform" width="40" height="20" x="560" y="140" /> -->
 
             <!-- 160 -->
             <rect class="platform" width="120" height="20" x="180" y="160" />
-            <!-- <rect class="platform" width="60" height="20" x="540" y="160" /> -->
-
-            <!-- 180 -->
-            <!-- <rect class="platform" width="80" height="20" x="520" y="180" /> -->
 
             <!-- 200 -->
             <rect class="platform" width="40" height="20" x="80" y="200" />
             <rect class="platform" width="80" height="20" x="360" y="200" />
 
             <!-- 220 -->
-            <rect id="disappearingplatform2" class="platform disappearing" width="80" height="20" x="0" y="220" />
+            <rect id="disappearingplatform2" class="platform disappearingplatform" width="80" height="20" x="0" y="220" />
             <rect class="platform" width="80" height="20" x="80" y="220" />
 
             <rect class="platform" width="140" height="20" x="320" y="220" />
@@ -152,12 +183,10 @@
 
             <!-- 280 -->
             <rect class="platform" width="100" height="20" x="200" y="280" />
-            <!-- <rect class="platform" width="40" height="20" x="560" y="280" /> -->
 
             <!-- 300 -->
             <rect class="platform" width="100" height="20" x="120" y="300" />
             <rect class="platform" width="40" height="20" x="280" y="300" />
-            <!-- <rect class="platform" width="100" height="20" x="500" y="300" /> -->
 
             <!-- 320 -->
             <rect class="platform" width="40" height="20" x="0" y="320" />
@@ -203,25 +232,30 @@
             <!-- the floor -->
             <rect class="platform" width="600" height="20" x="0" y="540" />
           </g>
+
           <g id="exit">
-            <rect width="40" height="40" style="fill:Black" />
+            <rect width="40" height="40" style="fill:black" />
             <rect width="40" height="20" style="fill:green" />
             <text x="20" y="10" dominant-baseline="middle" text-anchor="middle" style="fill:white;font-size:small">EXIT</text>
           </g>
+
           <g id="portal1">
             <circle cx="20" cy="20" r="20" style="fill:blue" />
             <circle cx="20" cy="20" r="15" style="fill:black" />
           </g>
+
           <g id="portal2">
             <circle cx="20" cy="20" r="20" style="fill:orange" />
             <circle cx="20" cy="20" r="15" style="fill:black" />
           </g>
+
           <g id="goodthings" />
           <g id="monsterbullets" />
           <g id="monsters" />
           <g id="bullets" />
+
           <g id="player">
-            <g inkscape:label="Layer 1" inkscape:groupmode="layer" id="playerwithoutname">
+            <g inkscape:label="Layer 1" inkscape:groupmode="layer" id="playerbody">
               <circle style="fill:#ffdd55" id="path12" cx="20" cy="20" r="20" />
               <path id="path169-0" style="fill:#2b0000;stroke:none;stroke-width:2.83797"
                 d="M 18.5,21.5 A 8.7500007,8.7500007 0 0 0 27.25,30.25 8.7500007,8.7500007 0 0 0 36,21.5 h -1.75 a 7.0000006,7.0000006 0 0 1 -7,7 7.0000006,7.0000006 0 0 1 -7,-7 z" transform="translate(0.9734167,-0.9337414)" />
@@ -232,55 +266,51 @@
           </g>
         </g>
 
-        <g id="highscoretable" transform="translate(40,40)">
-          <rect width="520" height="480"
-           style="fill:url(#startscreen_pattern);stroke:crimson;stroke-width:10"/>
-          <text x="260" y="40"
-           style="fill:crimson;font-size:32px;font-weight:bold;text-anchor:middle">
-            High Score Table
-          </text>
-          <text id="highscoretext" y="45"
-           style="font-size: 20px;font-weight:bold"/>
-           <g id="startagainbutton" onclick="startGame()">
-             <rect class="button" x="160" y="380" width="200" height="80" />
-             <text id="startagain" x="260" y="420" dominant-baseline="middle" text-anchor="middle">Start again?</text>
-           </g>
+        <g id="highscoretable" transform="translate(40, 40)">
+          <rect id="highscorearea" width="520" height="480" />
+          <text id="highscoretitle" x="260" y="40">High Score Table</text>
+          <text id="highscoretext" y="45" />
+          <g id="startagainbutton" onclick="startGame()">
+            <rect class="button" x="160" y="380" width="200" height="80" />
+            <text id="startagain" x="260" y="420" dominant-baseline="middle" text-anchor="middle">Start again?</text>
+          </g>
         </g>
-
       </g>
     </g>
 
-    <g id="timer">
-      <rect x="640" y="100" width="150" height="60" style="fill:Crimson" />
-      <text x="715" y="125" text-anchor="middle" style="fill:white;font-size:small">Time remaining:</text>
-      <text id="time" x="715" y="150" text-anchor="middle" style="fill:white">0 sec.</text>
-    </g>
+    <g id="displays">
+      <g id="leveldisplay">
+        <rect class="displayarea" x="640" y="100" width="150" height="60" />
+        <text class="displaylabel" x="715" y="125" text-anchor="middle">Level:</text>
+        <text class="displaytext" id="leveltext" x="715" y="150" text-anchor="middle">1</text>
+      </g>
 
-    <g id="bulletsdisplay">
-      <rect x="640" y="200" width="150" height="60" style="fill:Crimson" />
-      <text x="715" y="225" text-anchor="middle" style="fill:white;font-size:small">Bullets remaining:</text>
-      <text id="bulletsnumber" x="715" y="250" text-anchor="middle" style="fill:white">8</text>
-    </g>
+      <g id="timedisplay">
+        <rect class="displayarea" x="640" y="200" width="150" height="60" />
+        <text class="displaylabel" x="715" y="225" text-anchor="middle">Time remaining:</text>
+        <text class="displaytext" id="timetext" x="715" y="250" text-anchor="middle">0 sec.</text>
+      </g>
 
-    <g id="leveldisplay">
-      <rect x="640" y="300" width="150" height="60" style="fill:Crimson" />
-      <text x="715" y="325" text-anchor="middle" style="fill:white;font-size:small">Level:</text>
-      <text id="levelnumber" x="715" y="350" text-anchor="middle" style="fill:white">1</text>
-    </g>
+      <g id="scoredisplay">
+        <rect class="displayarea" x="640" y="300" width="150" height="60" />
+        <text class="displaylabel" x="715" y="325" text-anchor="middle">Score:</text>
+        <text class="displaytext" id="scoretext" x="715" y="350" text-anchor="middle">0</text>
+      </g>
 
-    <g id="scoredisplay">
-      <rect x="640" y="400" width="150" height="60" style="fill:Crimson" />
-      <text x="715" y="425" text-anchor="middle" style="fill:white;font-size:small">Score:</text>
-      <text id="score" x="715" y="450" text-anchor="middle" style="fill:white">0</text>
+      <g id="bulletsdisplay">
+        <rect class="displayarea" x="640" y="400" width="150" height="60" />
+        <text class="displaylabel" x="715" y="425" text-anchor="middle">Bullets remaining:</text>
+        <text class="displaytext" id="bulletstext" x="715" y="450" text-anchor="middle">8</text>
+      </g>
     </g>
 
     <g id="startscreen">
-      <rect width="100%" height="100%" style="fill:url(#startscreen_pattern)" />
+      <rect width="100%" height="100%" style="fill:url(#startscreenpattern)" />
       <foreignObject x="0" y="0" width="100%" height="100%">
 
         <body>
           <h1 id="title">The Coin Hunt</h1>
-          <h2 id="author">Ka Chung LAM</h2>
+          <h2 id="author">Ka Chung LAM (9021)</h2>
           <p id="descriptions">
             You are a coin hunter. You need to collect as many coins as possible. Use the A key to go left. The D key to go right and the W key to jump. Ghosts are going to stop you on the way. Use the H key to shoot and kill them. Pick up all
             coins and go to the exit quickly.
