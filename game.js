@@ -776,14 +776,12 @@ function die() {
   var position = 0;
 
   while (position < highScoreTable.length) {
-    if (highScoreTable[position++].score < score) {
+    if (highScoreTable[position].score < score)
       break;
-    }
+      ++position;
   }
 
-  if (position < 5) {
-    highScoreTable.splice(position, 0, record);
-  }
+  highScoreTable.splice(position, 0, record);
 
   writeHighScoreTable(highScoreTable);
   displayHighScoreTable(highScoreTable, position);
