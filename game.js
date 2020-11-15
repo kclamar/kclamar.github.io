@@ -698,8 +698,8 @@ function collisionDetection() {
       if (intersect(new Point(x, y), BULLET_SIZE, new Point(mx, my), MONSTER_SIZE)) {
         monsters.removeChild(monster);
         --j;
-        if (bullets.contains(node)) {
-          bullets.removeChild(node);
+        if (bullets.contains(bullet)) {
+          bullets.removeChild(bullet);
           --i;
         }
         addScore(SCORE_MONSTER);
